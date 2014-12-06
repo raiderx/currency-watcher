@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title> Home </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        table.rates {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Currency Exchange Rates</h1>
+
+    <div id="root"></div>
+
+    <script type="text/template" id="tpl-rates">
+        <tr>
+            <th>Time</th>
+            <th>Category</th>
+            <th>From currency</th>
+            <th>To currency</th>
+            <th>Buy</th>
+            <th>Sell</th>
+            <th>Created</th>
+        </tr>
+    </script>
+
+    <script type="text/template" id="tpl-rate">
+        <tr>
+            <td> <%- bankTime %> </td>
+            <td> <%- category %> </td>
+            <td> <%- fromCurrency %> </td>
+            <td> <%- toCurrency %> </td>
+            <td> <%- buy %> </td>
+            <td> <%- sell %> </td>
+            <td> <%- created %> </td>
+        </tr>
+    </script>
+
+    <script type="application/javascript" src="js/vendor/jquery-min.js"></script>
+    <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
+    <script type="application/javascript" src="js/vendor/backbone-min.js"></script>
+    <script type="application/javascript">
+        $(document).ready(function() {
+            var App = {
+                Models: {},
+                Collections: {},
+                Views: {}
+            };
+            App.Models.Rate = Backbone.Model.extend({
+                defaults: {
+                    bankTime: null,
+                    category: null,
+                    fromCurrency: null,
+                    toCurrency: null,
+                    buy: null,
+                    sell: null,
+                    created: null
+                }
+            });
+            App.Collections.Rates = Backbone.Collection.extend({
+                model: App.Models.Rate,
+                url: '/api/rates'
+            });
+            App.Views.Rates = Backbone.View.extend({
+                tagName: 'table',
+                className: 'rates',
+                template: _.template( $('#tpl-rates').html() ),
+                initialize: function() {
+                    this.collection.on( 'sync', this.render, this );
+
+                    this.collection.fetch();
+                },
+                render: function() {
+                    this.$el.html( this.template() );
+
+                    var rateTpl = _.template( $('#tpl-rate').html() );
+                    var self = this;
+                    _.each(this.collection.models, function(model) {
+                        self.$el.append( rateTpl(model.toJSON()) );
+                    });
+                    $('#root').html( this.$el );
+                }
+            });
+            var rates = new App.Collections.Rates();
+            new App.Views.Rates({ collection: rates });
+        });
+    </script>
+</body>
+</html>
