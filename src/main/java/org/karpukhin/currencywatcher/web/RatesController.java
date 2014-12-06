@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,14 +37,10 @@ public class RatesController {
             throw new ApplicationException("", e);
         }
         try (InputStream stream = url.openStream()) {
-            List<RateWto> rates = new ArrayList<>();
-            for (Rate rate : ratesProvider.parseStream(stream)) {
-                rates.add(new RateWto(rate));
-            }
-            return rates;
+            List<Rate> rates = ratesProvider.parseStream(stream);
+            return RateWto.convert(rates);
         } catch (IOException e) {
             throw new ApplicationException("Error while reading data from stream", e);
         }
-        //return Arrays.asList(new Rate(), new Rate());
     }
 }
