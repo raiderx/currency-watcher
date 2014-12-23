@@ -160,9 +160,11 @@ public class TcsRatesProviderImpl implements RatesProvider {
 
         // Для кредитных карт
 
-        CreditCardsOperations,  // Операции по договору кредитной карты, в т.ч. через
-                                // Центр обслуживания клиентов, Интернет-Банк и Мобильный
-                                // банк, а также с использованием карты (ее реквизитов)
+        CreditCardsTransfers,   // Операции по договору кредитной карты, в т.ч. через
+                                // Центр обслуживания клиентов, Интернет-Банк и Мобильный приложение,
+                                // кроме операций с использованием карты (ее реквизитов)
+
+        CreditCardsOperations,  // Операции с использованием карты (ее реквизитов)
 
         // Для электронных денежных средств
 
@@ -185,6 +187,7 @@ public class TcsRatesProviderImpl implements RatesProvider {
             map.put(DepositPayments, OperationCategories.DEPOSIT_PAYMENTS);
             map.put(DebitCardsTransfers, OperationCategories.DEBIT_CARDS_TRANSFERS);
             map.put(DebitCardsOperations, OperationCategories.DEBIT_CARDS_OPERATIONS);
+            map.put(CreditCardsTransfers, OperationCategories.CREDIT_CARDS_TRANSFERS);
             map.put(CreditCardsOperations, OperationCategories.CREDIT_CARDS_OPERATIONS);
             map.put(PrepaidCardsTransfers, OperationCategories.PREPAID_CARDS_TRANSFERS);
             map.put(PrepaidCardsOperations, OperationCategories.PREPAID_CARDS_OPERATIONS);
