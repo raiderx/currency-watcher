@@ -59,10 +59,6 @@ public class RatesController {
         } catch (MalformedURLException e) {
             throw new ApplicationException("Wrong URL: " + DEFAULT_URL, e);
         }
-        try (InputStream stream = url.openStream()) {
-        } catch (IOException e) {
-            throw new ApplicationException("", e);
-        }
         //Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("198.71.51.227", 80));
         HttpURLConnection connection;
         try {
