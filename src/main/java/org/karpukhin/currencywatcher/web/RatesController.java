@@ -43,7 +43,7 @@ public class RatesController {
 
     static final String CONTENT_ENCODING = "Content-Encoding";
 
-    private static final String DEFAULT_URL = "https://www.tcsbank.ru/api-m1/v1/currency_rates";
+    private static final String DEFAULT_URL = "https://www.tinkoff.ru/api/v1/currency_rates/";
 
     private RatesProvider ratesProvider;
 

@@ -103,6 +103,7 @@ public class TcsRatesProviderImpl implements RatesProvider {
                     "can not find one of fields 'category', 'fromCurrency' or 'toCurrency'");
         }
         Rate rate = new Rate();
+        rate.setBankName("TCS");
         rate.setCreated(new DateTime());
 
         String category = rateNode.at(CATEGORY_EXPR).asText();

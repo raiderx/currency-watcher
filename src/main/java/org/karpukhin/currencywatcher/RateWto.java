@@ -17,6 +17,7 @@ public class RateWto {
     public static final String DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
     public static final String NUMBER_FORMAT = "0.00";
 
+    private String bankName;
     private String bankTime;
     private String category;
     private String fromCurrency;
@@ -31,6 +32,7 @@ public class RateWto {
         List<RateWto> result = new ArrayList<>(rates.size());
         for (Rate rate : rates) {
             RateWto wto = new RateWto();
+            wto.bankName = rate.getBankName();
             wto.bankTime = rate.getBankTime() != null ? dateTimeFormatter.print(rate.getBankTime()) : null;
             wto.category = rate.getCategory() != null ? rate.getCategory().name() : null;
             wto.fromCurrency = rate.getFromCurrency();
@@ -41,6 +43,10 @@ public class RateWto {
             result.add(wto);
         }
         return result;
+    }
+
+    public String getBankName() {
+        return bankName;
     }
 
     public String getBankTime() {

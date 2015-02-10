@@ -10,6 +10,7 @@ import java.math.BigDecimal;
  */
 public class Rate {
 
+    private String bankName;
     private DateTime bankTime;
     private OperationCategories category;
     private String fromCurrency;
@@ -17,6 +18,14 @@ public class Rate {
     private BigDecimal buy;
     private BigDecimal sell;
     private DateTime created;
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
 
     public DateTime getBankTime() {
         return bankTime;

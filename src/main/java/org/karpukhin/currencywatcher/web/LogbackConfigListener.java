@@ -45,7 +45,7 @@ public class LogbackConfigListener implements ServletContextListener {
         try {
             configurator.doConfigure(location);
         } catch (JoranException e) {
-            throw new ApplicationException("Error while logback configure", e);
+            throw new ApplicationException("Error while logback configuring", e);
         }
     }
 }
