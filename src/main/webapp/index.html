@@ -12,6 +12,15 @@
 <body>
     <h1>Currency Exchange Rates</h1>
 
+    <div>
+        Category:
+        <select name="category">
+            <option value="">All</option>
+            <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
+            <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
+        </select>
+    </div>
+
     <div id="root"></div>
 
     <script type="text/template" id="tpl-rates">
@@ -70,17 +79,26 @@
                 className: 'rates',
                 template: _.template( $('#tpl-rates').html() ),
                 initialize: function() {
+                    this.rateTpl = _.template( $('#tpl-rate').html() );
+
                     this.collection.on( 'sync', this.render, this );
 
-                    this.collection.fetch();
+                    this.fetchCollection();
+
+                    var self = this;
+                    $('select[name=category]').bind('change', function() {
+                        self.fetchCollection();
+                    });
+                },
+                fetchCollection: function() {
+                    this.collection.fetch({data: {category: $('select[name=category]').val() }});
                 },
                 render: function() {
                     this.$el.html( this.template() );
 
-                    var rateTpl = _.template( $('#tpl-rate').html() );
                     var self = this;
                     _.each(this.collection.models, function(model) {
-                        self.$el.append( rateTpl(model.toJSON()) );
+                        self.$el.append( self.rateTpl(model.toJSON()) );
                     });
                     $('#root').html( this.$el );
                 }

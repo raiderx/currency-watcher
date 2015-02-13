@@ -1,5 +1,6 @@
 package org.karpukhin.currencywatcher.dao;
 
+import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface RatesDao {
     void updateRates(List<Rate> rates);
 
     List<Rate> getRates();
+
+    List<Rate> getRates(OperationCategories category);
 }
