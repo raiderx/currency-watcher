@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.joda.time.DateTime;
+import org.karpukhin.currencywatcher.Difference;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
@@ -104,6 +105,8 @@ public class TcsRatesProviderImpl implements RatesProvider {
         }
         Rate rate = new Rate();
         rate.setBankName("TCS");
+        rate.setBuyDifference(Difference.EQUAL);
+        rate.setSellDifference(Difference.EQUAL);
         rate.setCreated(new DateTime());
 
         String category = rateNode.at(CATEGORY_EXPR).asText();

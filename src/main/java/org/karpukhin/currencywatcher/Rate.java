@@ -16,7 +16,9 @@ public class Rate {
     private String fromCurrency;
     private String toCurrency;
     private BigDecimal buy;
+    private Difference buyDifference;
     private BigDecimal sell;
+    private Difference sellDifference;
     private DateTime created;
 
     public String getBankName() {
@@ -67,12 +69,28 @@ public class Rate {
         this.buy = buy;
     }
 
+    public Difference getBuyDifference() {
+        return buyDifference;
+    }
+
+    public void setBuyDifference(Difference buyDifference) {
+        this.buyDifference = buyDifference;
+    }
+
     public BigDecimal getSell() {
         return sell;
     }
 
     public void setSell(BigDecimal sell) {
         this.sell = sell;
+    }
+
+    public Difference getSellDifference() {
+        return sellDifference;
+    }
+
+    public void setSellDifference(Difference sellDifference) {
+        this.sellDifference = sellDifference;
     }
 
     public DateTime getCreated() {

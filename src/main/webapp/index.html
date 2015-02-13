@@ -7,6 +7,12 @@
         table.rates {
             width: 100%;
         }
+        .red {
+            color: red;
+        }
+        .green {
+            color: green;
+        }
     </style>
 </head>
 <body>
@@ -43,8 +49,8 @@
             <td> <%- category %> </td>
             <td> <%- fromCurrency %> </td>
             <td> <%- toCurrency %> </td>
-            <td> <%- buy %> </td>
-            <td> <%- sell %> </td>
+            <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
+            <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
             <td> <%- created %> </td>
         </tr>
     </script>
@@ -66,7 +72,9 @@
                     fromCurrency: null,
                     toCurrency: null,
                     buy: null,
+                    buyDiff: null,
                     sell: null,
+                    sellDiff: null,
                     created: null
                 }
             });

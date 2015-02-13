@@ -1,11 +1,12 @@
 package org.karpukhin.currencywatcher.dao;
 
+import org.karpukhin.currencywatcher.Difference;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,19 +19,24 @@ import java.util.Objects;
 @Repository
 public class RatesDaoImpl implements RatesDao {
 
-    private Map<MapKey, Rate> rates = new HashMap<>();
+    private List<Rate> rates = new ArrayList<>();
+    private Map<MapKey, Rate> latestRates = new HashMap<>();
 
     @Override
     public void updateRates(List<Rate> rates) {
         for (Rate rate : rates) {
             MapKey mapKey = new MapKey(rate);
-            Rate mapValue = this.rates.get(mapKey);
+            Rate mapValue = this.latestRates.get(mapKey);
             if (mapValue == null) {
-                this.rates.put(mapKey, rate);
+                this.latestRates.put(mapKey, rate);
+                this.rates.add(rate);
             } else {
                 if (!Objects.equals(mapValue.getBuy(), rate.getBuy()) ||
                         !Objects.equals(mapValue.getSell(), rate.getSell())) {
-                    this.rates.put(mapKey, mapValue);
+                    rate.setBuyDifference(getDifference(rate.getBuy(), mapValue.getBuy()));
+                    rate.setSellDifference(getDifference(rate.getSell(), mapValue.getSell()));
+                    this.latestRates.put(mapKey, rate);
+                    this.rates.add(rate);
                 }
             }
         }
@@ -38,18 +44,31 @@ public class RatesDaoImpl implements RatesDao {
 
     @Override
     public List<Rate> getRates() {
-        return new ArrayList<>(rates.values());
+        return new ArrayList<>(latestRates.values());
     }
 
     @Override
     public List<Rate> getRates(OperationCategories category) {
         List<Rate> result = new ArrayList<>();
-        for (Rate rate : rates.values()) {
+        for (Rate rate : latestRates.values()) {
             if (Objects.equals(rate.getCategory(), category)) {
                 result.add(rate);
             }
         }
         return result;
+    }
+
+    static Difference getDifference(BigDecimal first, BigDecimal second) {
+        if (first != null && second != null) {
+            int cmp = first.compareTo(second);
+            if (cmp > 0) {
+                return Difference.GREATER;
+            }
+            if (cmp < 0) {
+                return Difference.LESS;
+            }
+        }
+        return Difference.EQUAL;
     }
 
     static class MapKey {
