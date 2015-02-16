@@ -8,6 +8,8 @@ import org.karpukhin.currencywatcher.rateproviders.TcsRatesProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
@@ -22,6 +24,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 
 import static org.karpukhin.currencywatcher.utils.AssertUtils.assertNotNull;
@@ -31,6 +34,7 @@ import static org.karpukhin.currencywatcher.utils.AssertUtils.assertNotNull;
  * @since 12.02.15
  */
 @Component
+@ManagedResource(objectName = "org.karpukhin.currencywatcher:name=UpdateRatesTask")
 public class UpdateTask {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateTask.class);
@@ -65,6 +69,8 @@ public class UpdateTask {
     private RatesDao ratesDao;
 
     private RatesProvider ratesProvider;
+    
+    private Future future;
 
     public UpdateTask() {
         this.ratesProvider = new TcsRatesProviderImpl();
@@ -72,8 +78,25 @@ public class UpdateTask {
 
     @PostConstruct
     public void init() {
+        updateRatesAndSchedule();
+    }
+    
+    @ManagedOperation
+    public void updateRatesAndSchedule() {
         update();
-        taskExecutor.schedule(new Runnable() {
+        reschedule();
+    }
+
+    void update() {
+        logger.info("Update task started");
+        ratesDao.updateRates(getRates());
+    }
+    
+    void reschedule() {
+        if (future != null) {
+            future.cancel(true);
+        }
+        future = taskExecutor.schedule(new Runnable() {
             @Override
             public void run() {
                 update();
@@ -84,11 +107,6 @@ public class UpdateTask {
                 return getNextExecutionTime();
             }
         });
-    }
-
-    void update() {
-        logger.info("Update task started");
-        ratesDao.updateRates(getRates());
     }
 
     List<Rate> getRates() {

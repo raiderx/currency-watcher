@@ -28,7 +28,6 @@
         <appender-ref ref="FILE" />
     </appender>
 
-
     <logger name="org.karpukhin.currencywatcher" level="debug"/>
 
     <root level="warn">
