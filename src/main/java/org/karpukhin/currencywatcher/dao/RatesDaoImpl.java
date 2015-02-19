@@ -1,6 +1,5 @@
 package org.karpukhin.currencywatcher.dao;
 
-import org.karpukhin.currencywatcher.Difference;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.springframework.stereotype.Repository;
@@ -33,8 +32,8 @@ public class RatesDaoImpl implements RatesDao {
             } else {
                 if (!Objects.equals(mapValue.getBuy(), rate.getBuy()) ||
                         !Objects.equals(mapValue.getSell(), rate.getSell())) {
-                    rate.setBuyDifference(getDifference(rate.getBuy(), mapValue.getBuy()));
-                    rate.setSellDifference(getDifference(rate.getSell(), mapValue.getSell()));
+                    rate.setBuyDiff(getDiff(rate.getBuy(), mapValue.getBuy()));
+                    rate.setSellDiff(getDiff(rate.getSell(), mapValue.getSell()));
                     this.latestRates.put(mapKey, rate);
                     this.rates.add(rate);
                 }
@@ -58,17 +57,11 @@ public class RatesDaoImpl implements RatesDao {
         return result;
     }
 
-    static Difference getDifference(BigDecimal first, BigDecimal second) {
+    static BigDecimal getDiff(BigDecimal first, BigDecimal second) {
         if (first != null && second != null) {
-            int cmp = first.compareTo(second);
-            if (cmp > 0) {
-                return Difference.GREATER;
-            }
-            if (cmp < 0) {
-                return Difference.LESS;
-            }
+            return first.subtract(second);
         }
-        return Difference.EQUAL;
+        return BigDecimal.ZERO;
     }
 
     static class MapKey {

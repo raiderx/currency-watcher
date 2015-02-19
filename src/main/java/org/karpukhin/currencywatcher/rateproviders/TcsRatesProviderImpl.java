@@ -105,8 +105,8 @@ public class TcsRatesProviderImpl implements RatesProvider {
         }
         Rate rate = new Rate();
         rate.setBankName("TCS");
-        rate.setBuyDifference(Difference.EQUAL);
-        rate.setSellDifference(Difference.EQUAL);
+        rate.setBuyDiff(BigDecimal.ZERO);
+        rate.setSellDiff(BigDecimal.ZERO);
         rate.setCreated(new DateTime());
 
         String category = rateNode.at(CATEGORY_EXPR).asText();

@@ -3,6 +3,7 @@ package org.karpukhin.currencywatcher;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -39,10 +40,10 @@ public class RateWto {
             wto.category = rate.getCategory() != null ? rate.getCategory().name() : null;
             wto.fromCurrency = rate.getFromCurrency();
             wto.toCurrency = rate.getToCurrency();
-            wto.buy = rate.getBuy() != null ? numberFormat.format(rate.getBuy()) : null;
-            wto.buyDiff = rate.getBuyDifference() != null ? rate.getBuyDifference().name().toLowerCase() : null;
-            wto.sell = rate.getSell() != null ? numberFormat.format(rate.getSell()) : null;
-            wto.sellDiff = rate.getSellDifference() != null ? rate.getSellDifference().name().toLowerCase() : null;
+            wto.buy = getValue(rate.getBuy(), rate.getBuyDiff(), numberFormat);
+            wto.buyDiff = getDiff(rate.getBuyDiff());
+            wto.sell = getValue(rate.getSell(), rate.getSellDiff(), numberFormat);
+            wto.sellDiff = getDiff(rate.getSellDiff());
             wto.created = rate.getCreated() != null ? dateTimeFormatter.print(rate.getCreated()) : null;
             result.add(wto);
         }
@@ -87,5 +88,28 @@ public class RateWto {
 
     public String getCreated() {
         return created;
+    }
+
+    static String getValue(BigDecimal value, BigDecimal diff, NumberFormat format) {
+        if (value == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(format.format(value));
+        if (diff != null && diff.compareTo(BigDecimal.ZERO) != 0) {
+            sb.append(" (").append(format.format(diff)).append(")");
+        }
+        return sb.toString();
+    }
+
+    static String getDiff(BigDecimal diff) {
+        if (diff != null) {
+            if (diff.compareTo(BigDecimal.ZERO) > 0) {
+                return "greater";
+            }
+            if (diff.compareTo(BigDecimal.ZERO) < 0) {
+                return "less";
+            }
+        }
+        return "equals";
     }
 }

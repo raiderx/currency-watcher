@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -160,7 +161,10 @@ public class UpdateTask {
 
     static Date getNextExecutionTime() {
         long delay = getDelay();
-        logger.debug(String.format("Fetching was scheduled after %d:%02d", delay / ONE_MINUTE, delay % ONE_MINUTE));
-        return new Date(System.currentTimeMillis() + delay * 1000L);
+        Date date = new Date(System.currentTimeMillis() + delay * 1000L);
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        logger.debug(String.format("Update will be executed after %d:%02d at %s",
+                delay / ONE_MINUTE, delay % ONE_MINUTE, sdf.format(date)));
+        return date;
     }
 }
