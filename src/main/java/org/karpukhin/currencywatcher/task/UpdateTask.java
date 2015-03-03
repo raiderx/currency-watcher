@@ -1,5 +1,6 @@
 package org.karpukhin.currencywatcher.task;
 
+import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.dao.RatesDao;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
@@ -160,11 +161,24 @@ public class UpdateTask {
     }
 
     static Date getNextExecutionTime() {
-        long delay = getDelay();
-        Date date = new Date(System.currentTimeMillis() + delay * 1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        logger.debug(String.format("Update will be executed after %d:%02d at %s",
-                delay / ONE_MINUTE, delay % ONE_MINUTE, sdf.format(date)));
+        DateTime dateTime = DateTime.now();
+        if (dateTime.getHourOfDay() >= 9 && dateTime.getHourOfDay() < 20) {
+            long delay = getDelay();
+            Date date = new Date(System.currentTimeMillis() + delay * 1000L);
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            logger.debug(String.format("Update will be executed after %d:%02d at %s",
+                    delay / ONE_MINUTE, delay % ONE_MINUTE, sdf.format(date)));
+            return date;
+        }
+        Date date = getNextDay(9, 0).toDate();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        logger.debug("Update will be executed at {}", sdf.format(date));
         return date;
+    }
+    
+    static DateTime getNextDay(int hourOfDay, int minuteOfHour) {
+        return DateTime.now()
+                .withTime(hourOfDay, minuteOfHour, 0, 0)
+                .plusDays(1);
     }
 }
