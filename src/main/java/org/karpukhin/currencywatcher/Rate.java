@@ -17,8 +17,10 @@ public class Rate {
     private String toCurrency;
     private BigDecimal buy;
     private BigDecimal buyDiff;
+    private BigDecimal longBuyDiff;
     private BigDecimal sell;
     private BigDecimal sellDiff;
+    private BigDecimal longSellDiff;
     private DateTime created;
 
     public String getBankName() {
@@ -77,6 +79,14 @@ public class Rate {
         this.buyDiff = buyDiff;
     }
 
+    public BigDecimal getLongBuyDiff() {
+        return longBuyDiff;
+    }
+
+    public void setLongBuyDiff(BigDecimal longBuyDiff) {
+        this.longBuyDiff = longBuyDiff;
+    }
+
     public BigDecimal getSell() {
         return sell;
     }
@@ -93,11 +103,37 @@ public class Rate {
         this.sellDiff = sellDiff;
     }
 
+    public BigDecimal getLongSellDiff() {
+        return longSellDiff;
+    }
+
+    public void setLongSellDiff(BigDecimal longSellDiff) {
+        this.longSellDiff = longSellDiff;
+    }
+
     public DateTime getCreated() {
         return created;
     }
 
     public void setCreated(DateTime created) {
         this.created = created;
+    }
+
+    @Override
+    public String toString() {
+        return "Rate{" +
+                "bankName='" + bankName + '\'' +
+                ", bankTime=" + bankTime +
+                ", category=" + category +
+                ", fromCurrency='" + fromCurrency + '\'' +
+                ", toCurrency='" + toCurrency + '\'' +
+                ", buy=" + buy +
+                ", buyDiff=" + buyDiff +
+                ", longBuyDiff=" + longBuyDiff +
+                ", sell=" + sell +
+                ", sellDiff=" + sellDiff +
+                ", longSellDiff=" + longSellDiff +
+                ", created=" + created +
+                '}';
     }
 }

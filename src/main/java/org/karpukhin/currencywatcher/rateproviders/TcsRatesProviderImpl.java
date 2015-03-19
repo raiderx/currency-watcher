@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.joda.time.DateTime;
-import org.karpukhin.currencywatcher.Difference;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;

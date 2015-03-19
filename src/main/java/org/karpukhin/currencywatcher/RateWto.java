@@ -40,9 +40,9 @@ public class RateWto {
             wto.category = rate.getCategory() != null ? rate.getCategory().name() : null;
             wto.fromCurrency = rate.getFromCurrency();
             wto.toCurrency = rate.getToCurrency();
-            wto.buy = getValue(rate.getBuy(), rate.getBuyDiff(), numberFormat);
+            wto.buy = getValue(rate.getBuy(), rate.getLongBuyDiff(), numberFormat);
             wto.buyDiff = getDiff(rate.getBuyDiff());
-            wto.sell = getValue(rate.getSell(), rate.getSellDiff(), numberFormat);
+            wto.sell = getValue(rate.getSell(), rate.getLongSellDiff(), numberFormat);
             wto.sellDiff = getDiff(rate.getSellDiff());
             wto.created = rate.getCreated() != null ? dateTimeFormatter.print(rate.getCreated()) : null;
             result.add(wto);

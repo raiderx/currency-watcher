@@ -18,7 +18,6 @@ import java.util.Objects;
 @Repository
 public class RatesDaoImpl implements RatesDao {
 
-    private List<Rate> rates = new ArrayList<>();
     private Map<MapKey, Rate> latestRates = new HashMap<>();
 
     @Override
@@ -28,14 +27,11 @@ public class RatesDaoImpl implements RatesDao {
             Rate mapValue = this.latestRates.get(mapKey);
             if (mapValue == null) {
                 this.latestRates.put(mapKey, rate);
-                this.rates.add(rate);
             } else {
                 if (!Objects.equals(mapValue.getBuy(), rate.getBuy()) ||
                         !Objects.equals(mapValue.getSell(), rate.getSell())) {
-                    rate.setBuyDiff(getDiff(rate.getBuy(), mapValue.getBuy()));
-                    rate.setSellDiff(getDiff(rate.getSell(), mapValue.getSell()));
+                    updateDiff(rate, mapValue);
                     this.latestRates.put(mapKey, rate);
-                    this.rates.add(rate);
                 }
             }
         }
@@ -57,11 +53,36 @@ public class RatesDaoImpl implements RatesDao {
         return result;
     }
 
-    static BigDecimal getDiff(BigDecimal first, BigDecimal second) {
-        if (first != null && second != null) {
-            return first.subtract(second);
+    static void updateDiff(Rate newRate, Rate oldRate) {
+        BigDecimal buyDiff = getDiff(newRate.getBuy(), oldRate.getBuy());
+        BigDecimal sellDiff = getDiff(newRate.getSell(), oldRate.getSell());
+        newRate.setBuyDiff(buyDiff);
+        newRate.setLongBuyDiff(getLongDiff(oldRate.getLongBuyDiff(), buyDiff));
+        newRate.setSellDiff(sellDiff);
+        newRate.setLongSellDiff(getLongDiff(oldRate.getLongSellDiff(), sellDiff));
+    }
+
+    static BigDecimal getDiff(BigDecimal newValue, BigDecimal oldValue) {
+        if (oldValue != null && newValue != null) {
+            return newValue.subtract(oldValue);
         }
         return BigDecimal.ZERO;
+    }
+
+    static BigDecimal getLongDiff(BigDecimal longDiff, BigDecimal newDiff) {
+        if (longDiff == null && newDiff == null) {
+            return BigDecimal.ZERO;
+        }
+        if (longDiff == null || BigDecimal.ZERO.equals(longDiff)) {
+            return newDiff;
+        }
+        if (newDiff == null || BigDecimal.ZERO.equals(newDiff)) {
+            return longDiff;
+        }
+        if (longDiff.multiply(newDiff).compareTo(BigDecimal.ZERO) < 0) {
+            return newDiff;
+        }
+        return longDiff.add(newDiff);
     }
 
     static class MapKey {
