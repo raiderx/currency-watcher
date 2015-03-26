@@ -1,15 +1,17 @@
 package org.karpukhin.currencywatcher.dao;
 
+import com.google.common.eventbus.EventBus;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Pavel Karpukhin
@@ -18,20 +20,24 @@ import java.util.Objects;
 @Repository
 public class RatesDaoImpl implements RatesDao {
 
-    private Map<MapKey, Rate> latestRates = new HashMap<>();
+    @Autowired
+    private EventBus eventBus;
+
+    private Map<MapKey, Rate> latestRates = new ConcurrentHashMap<>();
 
     @Override
     public void updateRates(List<Rate> rates) {
         for (Rate rate : rates) {
             MapKey mapKey = new MapKey(rate);
-            Rate mapValue = this.latestRates.get(mapKey);
+            Rate mapValue = latestRates.get(mapKey);
             if (mapValue == null) {
-                this.latestRates.put(mapKey, rate);
+                latestRates.put(mapKey, rate);
             } else {
                 if (!Objects.equals(mapValue.getBuy(), rate.getBuy()) ||
                         !Objects.equals(mapValue.getSell(), rate.getSell())) {
                     updateDiff(rate, mapValue);
-                    this.latestRates.put(mapKey, rate);
+                    latestRates.put(mapKey, rate);
+                    eventBus.post(rate);
                 }
             }
         }

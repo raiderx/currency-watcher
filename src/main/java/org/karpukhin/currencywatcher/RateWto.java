@@ -41,9 +41,9 @@ public class RateWto {
             wto.fromCurrency = rate.getFromCurrency();
             wto.toCurrency = rate.getToCurrency();
             wto.buy = getValue(rate.getBuy(), rate.getLongBuyDiff(), numberFormat);
-            wto.buyDiff = getDiff(rate.getBuyDiff());
+            wto.buyDiff = getDiff(rate.getLongBuyDiff());
             wto.sell = getValue(rate.getSell(), rate.getLongSellDiff(), numberFormat);
-            wto.sellDiff = getDiff(rate.getSellDiff());
+            wto.sellDiff = getDiff(rate.getLongSellDiff());
             wto.created = rate.getCreated() != null ? dateTimeFormatter.print(rate.getCreated()) : null;
             result.add(wto);
         }

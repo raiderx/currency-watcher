@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title> Home </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        table.rates {
+            width: 100%;
+        }
+        .red {
+            color: red;
+        }
+        .green {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Currency Exchange Rates</h1>
+
+<div>
+    Category:
+    <select id="category" name="category">
+        <option value="">All</option>
+        <option value="DEPOSIT_PAYMENTS">Deposit Payments</option>
+        <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
+        <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
+    </select>
+</div>
+
+<div id="root">
+    <table class="rates">
+        <tr>
+            <th>Bank</th>
+            <th>Time</th>
+            <th>Category</th>
+            <th>From currency</th>
+            <th>To currency</th>
+            <th>Buy</th>
+            <th>Sell</th>
+            <th>Created</th>
+        </tr>
+    </table>
+</div>
+
+<script type="text/template" id="tpl-rate">
+    <tr id="<%- category %>_<%- fromCurrency %>_<%- toCurrency %>">
+        <td> <%- bankName %> </td>
+        <td> <%- bankTime %> </td>
+        <td> <%- category %> </td>
+        <td> <%- fromCurrency %> </td>
+        <td> <%- toCurrency %> </td>
+        <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
+        <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
+        <td> <%- created %> </td>
+    </tr>
+</script>
+
+<script type="application/javascript" src="js/vendor/jquery-min.js"></script>
+<script type="application/javascript" src="js/vendor/stomp.min.js"></script>
+<script type="application/javascript" src="js/vendor/underscore-min.js"></script>
+<script type="application/javascript">
+    $(function() {
+        var client = Stomp.client('ws://' + window.location.host + /*contextPath + */'/api/asyncrates');
+
+        var rateTpl = _.template( $('#tpl-rate').html() );
+
+        client.connect('login', 'passcode', function() {
+            client.subscribe('/topic/' + $('select[name=category]').val(), function(m) {
+                var rates = JSON.parse(m.body);
+                var table = $('table.rates');
+                $.each(rates, function(index, rate) {
+                    $('#' + rate.category + '_' + rate.fromCurrency + '_' + rate.toCurrency).remove();
+                    table.append( rateTpl( rate ) );
+                });
+            });
+            client.send('/queue', null, $('select[name=category]').val());
+        }, function(error) {
+            console.log(error);
+        });
+    });
+</script>
+</body>
+</html>
