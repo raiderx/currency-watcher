@@ -22,7 +22,6 @@
 <div>
     Category:
     <select id="category" name="category">
-        <option value="">All</option>
         <option value="DEPOSIT_PAYMENTS">Deposit Payments</option>
         <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
         <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
@@ -45,7 +44,7 @@
 </div>
 
 <script type="text/template" id="tpl-rate">
-    <tr id="<%- category %>_<%- fromCurrency %>_<%- toCurrency %>">
+    <tr id="<%- category %>_<%- fromCurrency %>_<%- toCurrency %>" class="rate">
         <td> <%- bankName %> </td>
         <td> <%- bankTime %> </td>
         <td> <%- category %> </td>
@@ -62,24 +61,36 @@
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
 <script type="application/javascript">
     $(function() {
-        var client = Stomp.client('ws://' + window.location.host + /*contextPath + */'/api/asyncrates');
+        var client = Stomp.client('ws://' + window.location.host + '/api/asyncrates');
 
         var rateTpl = _.template( $('#tpl-rate').html() );
 
-        client.connect('login', 'passcode', function() {
-            client.subscribe('/topic/' + $('select[name=category]').val(), function(m) {
-                var rates = JSON.parse(m.body);
-                var table = $('table.rates');
-                $.each(rates, function(index, rate) {
-                    $('#' + rate.category + '_' + rate.fromCurrency + '_' + rate.toCurrency).remove();
-                    table.append( rateTpl( rate ) );
-                });
+        function ratesUpdated(m) {
+            var rates = JSON.parse(m.body);
+            $.each(rates, function(index, rate) {
+                $('#' + rate.category + '_' + rate.fromCurrency + '_' + rate.toCurrency).remove();
+                $('table.rates').append( rateTpl( rate ) );
             });
-            client.send('/queue', null, $('select[name=category]').val());
+        }
+
+        client.connect('login', 'passcode', function() {
+            $('select[name=category] option').each(function() {
+                var value = $(this).attr('value');
+                if (value != '') {
+                    client.subscribe('/topic/category/' + value.toLowerCase(), ratesUpdated);
+                }
+            });
+            client.send('/queue/category', null, $('select[name=category]').val());
+
+            $('select[name=category]').on('change', function(e) {
+                $('table.rates tr.rate').remove();
+                client.send('/queue/category', null, $(e.target).val());
+            });
         }, function(error) {
             console.log(error);
         });
     });
+
 </script>
 </body>
 </html>

@@ -5,6 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.RateWto;
+import org.karpukhin.currencywatcher.RatesUpdatedEvent;
 import org.karpukhin.currencywatcher.dao.RatesDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,20 +59,19 @@ public class RatesController {
         return RateWto.convert(ratesDao.getRates());
     }
 
-    @MessageMapping("/queue")
+    @MessageMapping("/queue/category")
     public void getAsyncRates(String category) {
         if (StringUtils.hasText(category)) {
-            OperationCategories cat = OperationCategories.valueOf(category);
+            OperationCategories cat = OperationCategories.valueOf(category.toUpperCase());
             List<Rate> rates = ratesDao.getRates(cat);
             List<RateWto> wtos = RateWto.convert(rates);
-            template.convertAndSend("/topic/" + category, wtos);
+            template.convertAndSend("/topic/category/" + category.toLowerCase(), wtos);
         }
     }
 
     @Subscribe
-    public void sendRate(Rate rate) {
-        logger.debug("Sending: {}", rate);
-        List<RateWto> wtos = RateWto.convert(Arrays.asList(rate));
-        template.convertAndSend("/topic/" + rate.getCategory(), wtos);
+    public void sendRate(RatesUpdatedEvent event) {
+        List<RateWto> rates = RateWto.convert(event.getRates());
+        template.convertAndSend("/topic/category/" + event.getCategory(), rates);
     }
 }

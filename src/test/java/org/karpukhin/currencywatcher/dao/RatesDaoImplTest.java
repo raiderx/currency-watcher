@@ -1,10 +1,19 @@
 package org.karpukhin.currencywatcher.dao;
 
 import org.junit.Test;
+import org.karpukhin.currencywatcher.OperationCategories;
+import org.karpukhin.currencywatcher.Rate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -16,6 +25,7 @@ public class RatesDaoImplTest {
     @Test
     public void testGetLongDiffWhenBothNull() {
         BigDecimal result = RatesDaoImpl.getLongDiff(null, null);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(BigDecimal.ZERO));
     }
 
@@ -23,6 +33,7 @@ public class RatesDaoImplTest {
     public void testGetLongDiffWhenFirstNull() {
         BigDecimal second = BigDecimal.valueOf(123.45);
         BigDecimal result = RatesDaoImpl.getLongDiff(null, second);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(second));
     }
 
@@ -30,6 +41,7 @@ public class RatesDaoImplTest {
     public void testGetLongDiffWhenFirstZero() {
         BigDecimal second = BigDecimal.valueOf(123.45);
         BigDecimal result = RatesDaoImpl.getLongDiff(BigDecimal.ZERO, second);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(second));
     }
 
@@ -37,6 +49,7 @@ public class RatesDaoImplTest {
     public void testGetLongDiffWhenSecondNull() {
         BigDecimal first = BigDecimal.valueOf(123.45);
         BigDecimal result = RatesDaoImpl.getLongDiff(first, null);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(first));
     }
 
@@ -44,6 +57,7 @@ public class RatesDaoImplTest {
     public void testGetLongDiffWhenSecondZero() {
         BigDecimal first = BigDecimal.valueOf(123.45);
         BigDecimal result = RatesDaoImpl.getLongDiff(first, BigDecimal.ZERO);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(first));
     }
 
@@ -52,6 +66,7 @@ public class RatesDaoImplTest {
         BigDecimal first = BigDecimal.valueOf(12.35);
         BigDecimal second = BigDecimal.valueOf(34.56);
         BigDecimal result = RatesDaoImpl.getLongDiff(first, second);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(first.add(second)));
     }
 
@@ -60,6 +75,7 @@ public class RatesDaoImplTest {
         BigDecimal first = BigDecimal.valueOf(-12.35);
         BigDecimal second = BigDecimal.valueOf(-34.56);
         BigDecimal result = RatesDaoImpl.getLongDiff(first, second);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(first.add(second)));
     }
 
@@ -68,6 +84,34 @@ public class RatesDaoImplTest {
         BigDecimal first = BigDecimal.valueOf(12.35);
         BigDecimal second = BigDecimal.valueOf(-34.56);
         BigDecimal result = RatesDaoImpl.getLongDiff(first, second);
+        assertThat(result, is(not(nullValue())));
         assertThat(result, is(second));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGroupByCategoryWhenNull() {
+        RatesDaoImpl.groupByCategory(null);
+    }
+
+    @Test
+    public void testGroupByCategoryWhenEmpty() {
+        Map<OperationCategories, List<Rate>> result = RatesDaoImpl.groupByCategory(new ArrayList<Rate>());
+        assertThat(result, is(not(nullValue())));
+        assertThat(result.isEmpty(), is(true));
+    }
+
+    @Test
+    public void testGroupByCategory() {
+        Rate first = new Rate();
+        first.setCategory(OperationCategories.DEBIT_CARDS_OPERATIONS);
+        Rate second = new Rate();
+        second.setCategory(OperationCategories.DEBIT_CARDS_TRANSFERS);
+
+        Map<OperationCategories, List<Rate>> result = RatesDaoImpl.groupByCategory(Arrays.asList(first, second));
+
+        assertThat(result, is(not(nullValue())));
+        assertThat(result.size(), is(2));
+        assertThat(result.get(OperationCategories.DEBIT_CARDS_OPERATIONS), contains(first));
+        assertThat(result.get(OperationCategories.DEBIT_CARDS_TRANSFERS), contains(second));
     }
 }

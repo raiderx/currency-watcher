@@ -1,13 +1,16 @@
 package org.karpukhin.currencywatcher.dao;
 
+import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
+import org.karpukhin.currencywatcher.RatesUpdatedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +30,7 @@ public class RatesDaoImpl implements RatesDao {
 
     @Override
     public void updateRates(List<Rate> rates) {
+        List<Rate> changed = new ArrayList<>();
         for (Rate rate : rates) {
             MapKey mapKey = new MapKey(rate);
             Rate mapValue = latestRates.get(mapKey);
@@ -37,8 +41,15 @@ public class RatesDaoImpl implements RatesDao {
                         !Objects.equals(mapValue.getSell(), rate.getSell())) {
                     updateDiff(rate, mapValue);
                     latestRates.put(mapKey, rate);
-                    eventBus.post(rate);
+                    changed.add(rate);
                 }
+            }
+        }
+        if (!changed.isEmpty()) {
+            Map<OperationCategories, List<Rate>> grouped = groupByCategory(changed);
+            for (Map.Entry<OperationCategories, List<Rate>> entry : grouped.entrySet()) {
+                RatesUpdatedEvent event = new RatesUpdatedEvent(entry.getKey().name().toLowerCase(), entry.getValue());
+                eventBus.post(event);
             }
         }
     }
@@ -89,6 +100,21 @@ public class RatesDaoImpl implements RatesDao {
             return newDiff;
         }
         return longDiff.add(newDiff);
+    }
+
+    static Map<OperationCategories, List<Rate>> groupByCategory(List<Rate> rates) {
+        Preconditions.checkArgument(rates != null, "Parameter 'rates' can not be null");
+
+        Map<OperationCategories, List<Rate>> result = new HashMap<>();
+        for (Rate rate : rates) {
+            List<Rate> value = result.get(rate.getCategory());
+            if (value == null) {
+                value = new ArrayList<>();
+                result.put(rate.getCategory(), value);
+            }
+            value.add(rate);
+        }
+        return result;
     }
 
     static class MapKey {
