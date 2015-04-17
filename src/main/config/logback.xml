@@ -11,14 +11,10 @@
         <file>${currencyWatcherLogs}/currency-watcher.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>${currencyWatcherLogs}/currencyWatcherLogs.%d{yyyy-MM-dd}.log</fileNamePattern>
-
+            <fileNamePattern>${currencyWatcherLogs}/currency-watcher.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>5MB</maxFileSize>
-        </triggeringPolicy>
         <encoder>
             <pattern>%d [%thread] %-5level %logger{35} - %msg%n</pattern>
         </encoder>
