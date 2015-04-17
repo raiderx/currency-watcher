@@ -80,9 +80,10 @@
                     client.subscribe('/topic/category/' + value.toLowerCase(), ratesUpdated);
                 }
             });
-            client.send('/queue/category', null, $('select[name=category]').val());
+            var selectEl = $('select[name=category]');
+            client.send('/queue/category', null, selectEl.val());
 
-            $('select[name=category]').on('change', function(e) {
+            selectEl.on('change', function(e) {
                 $('table.rates tr.rate').remove();
                 client.send('/queue/category', null, $(e.target).val());
             });

@@ -45,8 +45,6 @@ public class TcsRatesProviderImpl implements RatesProvider {
     private static final String BUY_EXPR = "/buy";
     private static final String SELL_EXPR = "/sell";
 
-    static final String[] EXPECTED_CURRENCIES = {"EUR", "RUB", "USD"};
-
     public List<Rate> parseStream(InputStream stream) throws IOException {
         assertNotNull(stream, "Parameter 'stream' can not be null");
 
@@ -116,19 +114,8 @@ public class TcsRatesProviderImpl implements RatesProvider {
             throw new ApplicationException("Unexpected value for field '" + CATEGORY_FIELD + "': " + category);
         }
 
-        String fromCurrency = rateNode.at(FROM_CURRENCY_EXPR).asText();
-        if (Arrays.binarySearch(EXPECTED_CURRENCIES, fromCurrency) >= 0) {
-            rate.setFromCurrency(fromCurrency);
-        } else {
-            logger.warn("Unexpected value of field '" + FROM_CURRENCY_FIELD + "': {}", fromCurrency);
-        }
-
-        String toCurrency = rateNode.at(TO_CURRENCY_EXPR).asText();
-        if (Arrays.binarySearch(EXPECTED_CURRENCIES, fromCurrency) >= 0) {
-            rate.setToCurrency(toCurrency);
-        } else {
-            logger.warn("Unexpected value of field '" + TO_CURRENCY_FIELD + "': {}", toCurrency);
-        }
+        rate.setFromCurrency(rateNode.at(FROM_CURRENCY_EXPR).asText());
+        rate.setToCurrency(rateNode.at(TO_CURRENCY_EXPR).asText());
 
         if (rateNode.hasNonNull(BUY_FIELD)) {
             rate.setBuy(new BigDecimal(rateNode.at(BUY_EXPR).asText()));
