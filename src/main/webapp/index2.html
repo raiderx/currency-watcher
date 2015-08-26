@@ -20,12 +20,12 @@
 <h1>Currency Exchange Rates</h1>
 
 <div>
-    Category:
+    <label>Category:
     <select id="category" name="category">
         <option value="DEPOSIT_PAYMENTS">Deposit Payments</option>
         <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
         <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
-    </select>
+    </select></label>
 </div>
 
 <div id="root">
@@ -34,8 +34,7 @@
             <th>Bank</th>
             <th>Time</th>
             <th>Category</th>
-            <th>From currency</th>
-            <th>To currency</th>
+            <th>Currency Pair</th>
             <th>Buy</th>
             <th>Sell</th>
             <th>Created</th>
@@ -44,12 +43,11 @@
 </div>
 
 <script type="text/template" id="tpl-rate">
-    <tr id="<%- category %>_<%- fromCurrency %>_<%- toCurrency %>" class="rate">
+    <tr id="rate_<%- fromCurrency.toLowerCase() %>_<%- toCurrency.toLowerCase() %>" class="rate">
         <td> <%- bankName %> </td>
         <td> <%- bankTime %> </td>
         <td> <%- category %> </td>
-        <td> <%- fromCurrency %> </td>
-        <td> <%- toCurrency %> </td>
+        <td> <%- fromCurrency %>/<%- toCurrency %> </td>
         <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
         <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
         <td> <%- created %> </td>
@@ -60,36 +58,70 @@
 <script type="application/javascript" src="js/vendor/stomp.min.js"></script>
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
 <script type="application/javascript">
+
+    var pageModel = {
+        category: null,
+        rates: []
+    };
+
+    function initPageModel() {
+        pageModel.category = $('select[name=category]').val();
+    }
+
+    function isCategorySelected(category) {
+        //return $('select[name=category]').val() === category;
+        return pageModel.category === category;
+    }
+
     $(function() {
+
+        initPageModel();
+
         var client = Stomp.client('ws://' + window.location.host + '/api/asyncrates');
+
+        /**
+         * Asks to update rates for given category
+         */
+        function askUpdateCategoryRates(category) {
+            $('table.rates tr.rate').remove();
+            client.send('/queue/category', null, category);
+        }
 
         var rateTpl = _.template( $('#tpl-rate').html() );
 
-        function ratesUpdated(m) {
+        function categoryRatesUpdated(m) {
             var rates = JSON.parse(m.body);
             $.each(rates, function(index, rate) {
-                $('#' + rate.category + '_' + rate.fromCurrency + '_' + rate.toCurrency).remove();
-                $('table.rates').append( rateTpl( rate ) );
+
+                if ( isCategorySelected(rate.category) ) {
+                    $('#rate_' + rate.fromCurrency.toLowerCase() + '_' + rate.toCurrency.toLowerCase()).remove();
+                    $('table.rates').append( rateTpl( rate ) );
+                }
+
             });
         }
 
-        client.connect('login', 'passcode', function() {
+        function onConnect() {
             $('select[name=category] option').each(function() {
                 var value = $(this).attr('value');
                 if (value != '') {
-                    client.subscribe('/topic/category/' + value.toLowerCase(), ratesUpdated);
+                    client.subscribe('/topic/category/' + value.toLowerCase(), categoryRatesUpdated);
                 }
             });
             var selectEl = $('select[name=category]');
             client.send('/queue/category', null, selectEl.val());
 
-            selectEl.on('change', function(e) {
-                $('table.rates tr.rate').remove();
-                client.send('/queue/category', null, $(e.target).val());
+            selectEl.on('change', function(event) {
+                pageModel.category = $(event.target).val();
+                askUpdateCategoryRates(pageModel.category);
             });
-        }, function(error) {
+        }
+
+        function onError(error) {
             console.log(error);
-        });
+        }
+
+        client.connect('login', 'passcode', onConnect, onError);
     });
 
 </script>

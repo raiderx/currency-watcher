@@ -6,6 +6,8 @@ import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.RatesUpdatedEvent;
 import org.karpukhin.currencywatcher.dao.RatesDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ import java.util.Map;
 @Service
 public class RatesServiceImpl implements RatesService {
 
+    private static final Logger logger = LoggerFactory.getLogger(RatesService.class);
+
     @Autowired
     private EventBus eventBus;
 
@@ -31,17 +35,18 @@ public class RatesServiceImpl implements RatesService {
     @Override
     public void updateRates(List<Rate> rates) {
         List<Rate> changed = new ArrayList<>();
-        for (Rate rate : rates) {
-            Rate mapValue =
-                    ratesDao.getLastRate(rate.getBankName(), rate.getCategory(), rate.getFromCurrency(), rate.getToCurrency());
-            if (mapValue == null) {
-                ratesDao.createRate(rate);
+        for (Rate newRate : rates) {
+            Rate oldRate = ratesDao.getLastRate(newRate.getBankName(), newRate.getCategory(),
+                                                newRate.getFromCurrency(), newRate.getToCurrency());
+            if (oldRate == null) {
+                ratesDao.createRate(newRate);
             } else {
-                if (!equals(mapValue.getBuy(), rate.getBuy()) ||
-                        !equals(mapValue.getSell(), rate.getSell())) {
-                    updateDiff(rate, mapValue);
-                    ratesDao.createRate(rate);
-                    changed.add(rate);
+                if (!equals(oldRate.getBuy(), newRate.getBuy()) || !equals(oldRate.getSell(), newRate.getSell())) {
+                    logger.info("Rate was updated: {}/{}, old: {}, {}, new: {}, {}",
+                            newRate.getFromCurrency(), newRate.getToCurrency(), oldRate.getBuy(), oldRate.getSell(), newRate.getBuy(), newRate.getSell());
+                    updateDiff(newRate, oldRate);
+                    ratesDao.createRate(newRate);
+                    changed.add(newRate);
                 }
             }
         }
