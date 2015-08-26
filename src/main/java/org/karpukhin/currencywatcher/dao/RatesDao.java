@@ -15,7 +15,20 @@ public interface RatesDao {
 
     void createRate(Rate rate);
 
-    List<Rate> getLastRates();
+    /**
+     * Returns list of rates with given bank name
+     *
+     * @param bankName bank name
+     * @return  list of rates with given bank name
+     */
+    List<Rate> getLastRates(String bankName);
 
-    List<Rate> getLastRates(OperationCategories category);
+    /**
+     * Returns list of rates with given bank name and operation category
+     *
+     * @param bankName bank name
+     * @param category operation category
+     * @return  list of rates with given bank name and operation category
+     */
+    List<Rate> getLastRates(String bankName, OperationCategories category);
 }

@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,9 +24,12 @@ import java.util.Map;
  * @since 12.02.15
  */
 @Service
+@Transactional
 public class RatesServiceImpl implements RatesService {
 
     private static final Logger logger = LoggerFactory.getLogger(RatesService.class);
+
+    private static final String BANK_NAME = "TCS";
 
     @Autowired
     private EventBus eventBus;
@@ -33,6 +38,7 @@ public class RatesServiceImpl implements RatesService {
     private RatesDao ratesDao;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void updateRates(List<Rate> rates) {
         List<Rate> changed = new ArrayList<>();
         for (Rate newRate : rates) {
@@ -61,12 +67,12 @@ public class RatesServiceImpl implements RatesService {
 
     @Override
     public List<Rate> getRates() {
-        return ratesDao.getLastRates();
+        return ratesDao.getLastRates(BANK_NAME);
     }
 
     @Override
     public List<Rate> getRates(OperationCategories category) {
-        return ratesDao.getLastRates(category);
+        return ratesDao.getLastRates(BANK_NAME, category);
     }
 
     static <T extends Comparable> boolean equals(T first, T second) {

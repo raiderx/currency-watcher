@@ -11,3 +11,14 @@ Application requires JRE 7.
 ###Screenshots###
 
 ![Main window](currency-watcher.png)
+
+###Install###
+
+Create database:
+
+```
+mysql> create user 'rates'@'localhost' identified by 'P@ssw0rd';
+mysql> create database rates;
+mysql> grant all privileges on rates.* to 'rates'@'localhost';
+mysql> exit;
+```

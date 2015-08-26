@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Pavel Karpukhin
  * @since 13.05.15
  */
-@Repository
 public class RatesDaoSimpleImpl implements RatesDao {
 
     private Map<MapKey, Rate> latestRates = new ConcurrentHashMap<>();
@@ -31,15 +30,21 @@ public class RatesDaoSimpleImpl implements RatesDao {
     }
 
     @Override
-    public List<Rate> getLastRates() {
-        return new ArrayList<>(latestRates.values());
+    public List<Rate> getLastRates(String bankName) {
+        List<Rate> result = new ArrayList<>();
+        for (Rate rate : latestRates.values()) {
+            if (Objects.equals(rate.getBankName(), bankName)) {
+                result.add(rate);
+            }
+        }
+        return result;
     }
 
     @Override
-    public List<Rate> getLastRates(OperationCategories category) {
+    public List<Rate> getLastRates(String bankName, OperationCategories category) {
         List<Rate> result = new ArrayList<>();
         for (Rate rate : latestRates.values()) {
-            if (Objects.equals(rate.getCategory(), category)) {
+            if (Objects.equals(rate.getBankName(), bankName) && Objects.equals(rate.getCategory(), category)) {
                 result.add(rate);
             }
         }
