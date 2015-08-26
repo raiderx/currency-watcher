@@ -59,6 +59,8 @@
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
 <script type="application/javascript">
 
+    var contextPath = '';
+
     var pageModel = {
         category: null,
         rates: []
@@ -77,7 +79,7 @@
 
         initPageModel();
 
-        var client = Stomp.client('ws://' + window.location.host + '/api/asyncrates');
+        var client = Stomp.client('ws://' + window.location.host + contextPath + '/api/asyncrates');
 
         /**
          * Asks to update rates for given category
@@ -102,16 +104,17 @@
         }
 
         function onConnect() {
-            $('select[name=category] option').each(function() {
+            var $selectEl = $('select[name=category]');
+            $('option', $selectEl).each(function() {
                 var value = $(this).attr('value');
                 if (value != '') {
                     client.subscribe('/topic/category/' + value.toLowerCase(), categoryRatesUpdated);
                 }
             });
-            var selectEl = $('select[name=category]');
-            client.send('/queue/category', null, selectEl.val());
 
-            selectEl.on('change', function(event) {
+            client.send('/queue/category', null, $selectEl.val());
+
+            $selectEl.on('change', function(event) {
                 pageModel.category = $(event.target).val();
                 askUpdateCategoryRates(pageModel.category);
             });
