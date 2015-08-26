@@ -2,10 +2,10 @@ package org.karpukhin.currencywatcher.task;
 
 import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.Rate;
-import org.karpukhin.currencywatcher.dao.RatesDao;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
 import org.karpukhin.currencywatcher.rateproviders.RatesProvider;
 import org.karpukhin.currencywatcher.rateproviders.TcsRatesProviderImpl;
+import org.karpukhin.currencywatcher.service.RatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,7 @@ public class UpdateTask {
     private TaskScheduler taskExecutor;
 
     @Autowired
-    private RatesDao ratesDao;
+    private RatesService ratesService;
 
     private RatesProvider ratesProvider;
     
@@ -91,7 +91,7 @@ public class UpdateTask {
 
     void update() {
         logger.info("Update task started");
-        ratesDao.updateRates(getRates());
+        ratesService.updateRates(getRates());
     }
     
     void reschedule() {

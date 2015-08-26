@@ -6,7 +6,7 @@ import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.RateWto;
 import org.karpukhin.currencywatcher.RatesUpdatedEvent;
-import org.karpukhin.currencywatcher.dao.RatesDao;
+import org.karpukhin.currencywatcher.service.RatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class RatesController {
     private EventBus eventBus;
 
     @Autowired
-    private RatesDao ratesDao;
+    private RatesService ratesService;
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -53,17 +53,17 @@ public class RatesController {
     public List<RateWto> getRates(String category) {
         if (StringUtils.hasText(category)) {
             OperationCategories cat = OperationCategories.valueOf(category);
-            List<Rate> rates = ratesDao.getRates(cat);
+            List<Rate> rates = ratesService.getRates(cat);
             return RateWto.convert(rates);
         }
-        return RateWto.convert(ratesDao.getRates());
+        return RateWto.convert(ratesService.getRates());
     }
 
     @MessageMapping("/queue/category")
     public void getAsyncRates(String category) {
         if (StringUtils.hasText(category)) {
             OperationCategories cat = OperationCategories.valueOf(category.toUpperCase());
-            List<Rate> rates = ratesDao.getRates(cat);
+            List<Rate> rates = ratesService.getRates(cat);
             List<RateWto> wtos = RateWto.convert(rates);
             template.convertAndSend("/topic/category/" + category.toLowerCase(), wtos);
         }

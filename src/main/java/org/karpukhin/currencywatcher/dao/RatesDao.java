@@ -11,9 +11,11 @@ import java.util.List;
  */
 public interface RatesDao {
 
-    void updateRates(List<Rate> rates);
+    Rate getLastRate(String bankName, OperationCategories category, String fromCurrency, String toCurrency);
 
-    List<Rate> getRates();
+    void createRate(Rate rate);
 
-    List<Rate> getRates(OperationCategories category);
+    List<Rate> getLastRates();
+
+    List<Rate> getLastRates(OperationCategories category);
 }
