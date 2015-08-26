@@ -3,6 +3,7 @@
 <head lang="en">
     <title> Home </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="css/xcharts.min.css"/>
     <style>
         table.rates {
             width: 100%;
@@ -47,6 +48,25 @@
             <th>Created</th>
         </tr>
     </table>
+
+    <div id="chart_usd_rub">
+        <label><input type="radio" name="usd_rub_period" value="day" checked="checked"/>Day</label>
+        <label><input type="radio" name="usd_rub_period" value="week"/>Week</label>
+        <label><input type="radio" name="usd_rub_period" value="month"/>Month</label>
+        <label><input type="radio" name="usd_rub_period" value="custom"/>Custom</label>
+
+        <figure style="height: 300px;"></figure>
+    </div>
+
+    <div id="chart_eur_rub">
+        <label><input type="radio" name="eur_rub_period" value="day" checked="checked"/>Day</label>
+        <label><input type="radio" name="eur_rub_period" value="week"/>Week</label>
+        <label><input type="radio" name="eur_rub_period" value="month"/>Month</label>
+        <label><input type="radio" name="eur_rub_period" value="custom"/>Custom</label>
+
+        <figure style="height: 300px;"></figure>
+    </div>
+
 </div>
 
 <script type="text/template" id="tpl-rate">
@@ -62,9 +82,11 @@
     </tr>
 </script>
 
+<script type="application/javascript" src="js/vendor/d3.min.js"></script>
 <script type="application/javascript" src="js/vendor/jquery-min.js"></script>
 <script type="application/javascript" src="js/vendor/stomp.min.js"></script>
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
+<script type="application/javascript" src="js/vendor/xcharts.min.js"></script>
 <script type="application/javascript">
 
     var contextPath = '';
@@ -146,9 +168,73 @@
         return $.inArray(currencyPair, pageModel.currencyPairs) >= 0;
     }
 
+    function initChart(currencyPair) {
+        var suffix = currencyPair.replace('/', '_').toLowerCase();
+        var fromCurrency = currencyPair.split('/')[0];
+        var data = {
+            xScale: 'ordinal',
+            yScale: 'linear',
+            main: [{
+                className: '.' + fromCurrency.toLowerCase() + '.buy',
+                data: []
+            }, {
+                className: '.' + fromCurrency.toLowerCase() + '.sell',
+                data: []
+            }]
+        };
+        var opts = {
+            interpolation: 'linear',
+            dataFormatX: function(x) { return d3.time.format('%d.%m.%Y %H:%M:%S').parse(x); },
+            tickFormatX: function(x) { return d3.time.format('%d.%m.%y %H:%M')(x); }
+        };
+
+        var chart = new xChart('line-dotted', data, '#chart_' + suffix + ' figure', opts);
+
+        var $inputs = $('#chart_' + suffix + ' input[name=' + suffix + '_period]');
+        $inputs.on('change', function(event) {
+            var $input = $(event.target);
+            if ($input.is(':checked')) {
+                updateChart(chart, currencyPair, $input.val());
+            }
+        });
+
+        var period = $inputs.filter(':checked').val();
+
+        updateChart(chart, currencyPair, period);
+
+        return chart;
+    }
+
+    function updateChart(chart, currencyPair, period) {
+        $.get(contextPath + '/api/currencypairrates', { period: period, currencyPair: currencyPair }, function(response) {
+            var fromCurrency = currencyPair.split('/')[0];
+            var buyData = [];
+            var sellData = [];
+            $.each(response, function(index, rate) {
+                buyData.push({x: rate.dateTime, y: parseFloat(rate.buy.replace(',', '.')), label: fromCurrency + ' BUY'});
+                sellData.push({x: rate.dateTime, y: parseFloat(rate.sell.replace(',', '.')), label: fromCurrency + ' SELL'});
+            });
+            var data = {
+                xScale: 'ordinal',
+                yScale: 'linear',
+                main: [{
+                    className: '.' + fromCurrency.toLowerCase() + '.buy',
+                    data: buyData
+                }, {
+                    className: '.' + fromCurrency.toLowerCase() + '.sell',
+                    data: sellData
+                }]
+            };
+            chart.setData(data);
+        });
+    }
+
     $(function() {
 
         initPageModel();
+
+        initChart('USD/RUB');
+        initChart('EUR/RUB');
 
         var currencyPairInputs = $('input[type=checkbox].currencyPair');
         currencyPairInputs.each(function() {

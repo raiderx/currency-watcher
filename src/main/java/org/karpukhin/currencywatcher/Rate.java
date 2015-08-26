@@ -26,7 +26,13 @@ import java.math.BigDecimal;
 @NamedQueries({
         @NamedQuery(
                 name = "rates",
-                query = "from Rate r where r.bankName = :bankName and category = :category and fromCurrency = :fromCurrency and toCurrency = :toCurrency order by bankTime desc"),
+                query = "from Rate r where r.bankName = :bankName and category = :category and fromCurrency = :fromCurrency and toCurrency = :toCurrency " +
+                        "order by bankTime desc"),
+        @NamedQuery(
+                name = "ratesByDate",
+                query = "from Rate r " +
+                        "where r.bankName = :bankName and category = :category and fromCurrency = :fromCurrency and toCurrency = :toCurrency and bankTime >= :fromDate and bankTime < :toDate " +
+                        "order by bankTime asc")
 })
 @NamedNativeQueries({
         @NamedNativeQuery(

@@ -16,4 +16,6 @@ public interface RatesService {
     List<Rate> getRates();
 
     List<Rate> getRates(OperationCategories category);
+
+    List<Rate> getCurrencyPairDayRates(String currencyPair);
 }
