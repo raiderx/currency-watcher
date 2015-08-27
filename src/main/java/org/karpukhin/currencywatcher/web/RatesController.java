@@ -82,7 +82,9 @@ public class RatesController {
         if ("day".equals(period)) {
             rates = ratesService.getCurrencyPairDayRates(currencyPair);
         } else if ("week".equals(period)) {
-            //rates =
+            rates = ratesService.getCurrencyPairWeekRates(currencyPair);
+        } else if ("month".equals(period)) {
+            rates = ratesService.getCurrencyPairMonthRates(currencyPair);
         }
         return SimpleRateWto.convert(rates);
     }

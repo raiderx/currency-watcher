@@ -79,8 +79,30 @@ public class RatesServiceImpl implements RatesService {
 
     @Override
     public List<Rate> getCurrencyPairDayRates(String currencyPair) {
-        DateTime from = LocalDate.now().toDateTimeAtStartOfDay();
         DateTime to = LocalDate.now().plusDays(1).toDateTimeAtStartOfDay();
+        DateTime from = to.minusDays(1);
+        String[] parts = currencyPair.split("/");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Expected currency pair but got: " + currencyPair);
+        }
+        return ratesDao.getRates(BANK_NAME, OperationCategories.DEBIT_CARDS_TRANSFERS, parts[0], parts[1], from, to);
+    }
+
+    @Override
+    public List<Rate> getCurrencyPairWeekRates(String currencyPair) {
+        DateTime to = LocalDate.now().plusDays(1).toDateTimeAtStartOfDay();
+        DateTime from = to.minusWeeks(1);
+        String[] parts = currencyPair.split("/");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Expected currency pair but got: " + currencyPair);
+        }
+        return ratesDao.getRates(BANK_NAME, OperationCategories.DEBIT_CARDS_TRANSFERS, parts[0], parts[1], from, to);
+    }
+
+    @Override
+    public List<Rate> getCurrencyPairMonthRates(String currencyPair) {
+        DateTime to = LocalDate.now().plusDays(1).toDateTimeAtStartOfDay();
+        DateTime from = to.minusMonths(1);
         String[] parts = currencyPair.split("/");
         if (parts.length != 2) {
             throw new IllegalArgumentException("Expected currency pair but got: " + currencyPair);
