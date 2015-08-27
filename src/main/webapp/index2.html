@@ -26,6 +26,12 @@
         <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
         <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
     </select></label>
+
+    Currency:
+    <label><input type="checkbox" value="USD/RUB" class="currencyPair"/>USD/RUB</label>
+    <label><input type="checkbox" value="EUR/RUB" class="currencyPair"/>EUR/RUB</label>
+    <label><input type="checkbox" value="EUR/USD" class="currencyPair"/>EUR/USD</label>
+    <label><input type="checkbox" value="GBP/RUB" class="currencyPair"/>GBP/RUB</label>
 </div>
 
 <div id="root">
@@ -62,11 +68,65 @@
     var contextPath = '';
 
     var pageModel = {
+        currencyPairs: [],
         category: null,
         rates: []
     };
 
+    /**
+     * Returns array of currency pairs from local storage
+     */
+    function loadCurrencyPairs() {
+        var currencyPairsStr = localStorage.getItem('currencyPairs');
+        console.log('currencyPairsStr:', currencyPairsStr);
+        var currencyPairs = [];
+        try {
+            currencyPairs = currencyPairsStr ? JSON.parse(currencyPairsStr) : [];
+        } catch (e) {
+            console.error(e);
+        }
+        return currencyPairs;
+    }
+
+    /**
+     * Adds given currency pair to local storage and returns new array of currency pairs.
+     * If local storage already contains given currency pair then such pair will not be added.
+     */
+    function addCurrencyPair(currencyPair) {
+        var currencyPairs = loadCurrencyPairs();
+        if ($.inArray(currencyPair, currencyPairs) < 0) {
+            currencyPairs.push(currencyPair);
+            localStorage.setItem('currencyPairs', JSON.stringify(currencyPairs));
+        } else {
+            console.log('Currency pair', currencyPair, 'already is in storage');
+        }
+        return currencyPairs;
+    }
+
+    /**
+     * Removes given currency pair from local storage and returns new array of currency pairs.
+     * If local storage does not contain given currency pair then array of currency pair will not be changed.
+     */
+    function removeCurrencyPair(currencyPair) {
+        var currencyPairs = loadCurrencyPairs();
+        if (currencyPairs.length > 0) {
+            var i = $.inArray(currencyPair, currencyPairs);
+            if (i == currencyPairs.length - 1) {
+                currencyPairs.pop();
+            } else if (i > 0) {
+                currencyPairs = currencyPairs.slice(0, i).concat(currencyPairs.slice(i + 1));
+            } else if (i == 0) {
+                currencyPairs = currencyPairs.slice(i + 1);
+            }
+            localStorage.setItem('currencyPairs', JSON.stringify(currencyPairs));
+        } else {
+            console.log('No any currency pair in storage');
+        }
+        return currencyPairs;
+    }
+
     function initPageModel() {
+        pageModel.currencyPairs = loadCurrencyPairs();
         pageModel.category = $('select[name=category]').val();
     }
 
@@ -75,9 +135,37 @@
         return pageModel.category === category;
     }
 
+    /**
+     * Returns true if currency pair selected by user
+     */
+    function isCurrencyPairSelected(fromCurrency, toCurrency) {
+        //return $('#' + fromCurrency.toLowerCase() + '_' + toCurrency.toLowerCase()).is(':checked');
+        var currencyPair = fromCurrency + '/' + toCurrency;
+        return $.inArray(currencyPair, pageModel.currencyPairs) >= 0;
+    }
+
     $(function() {
 
         initPageModel();
+
+        var currencyPairInputs = $('input[type=checkbox].currencyPair');
+        currencyPairInputs.each(function() {
+
+            var $input = $(this);
+            if ($.inArray($input.val(), pageModel.currencyPairs) >= 0) {
+                $input.attr('checked', 'checked');
+            }
+
+        });
+        currencyPairInputs.on('change', function(event) {
+            var $input = $(event.target);
+            if ( $input.is(':checked') ) {
+                client.send('/queue/category', null, pageModel.category);
+            } else {
+                $('#rate_' + $input.val().replace('/', '_').toLowerCase()).remove();
+            }
+            currencyPairsChanged(event);
+        });
 
         var client = Stomp.client('ws://' + window.location.host + contextPath + '/api/asyncrates');
 
@@ -95,7 +183,7 @@
             var rates = JSON.parse(m.body);
             $.each(rates, function(index, rate) {
 
-                if ( isCategorySelected(rate.category) ) {
+                if ( isCategorySelected(rate.category) && isCurrencyPairSelected(rate.fromCurrency, rate.toCurrency) ) {
                     $('#rate_' + rate.fromCurrency.toLowerCase() + '_' + rate.toCurrency.toLowerCase()).remove();
                     $('table.rates').append( rateTpl( rate ) );
                 }
@@ -126,6 +214,17 @@
 
         client.connect('login', 'passcode', onConnect, onError);
     });
+
+    function currencyPairsChanged(event) {
+        var $input = $(event.target);
+        var currencyPair = $input.val();
+        if ($input.is(':checked')) {
+            pageModel.currencyPairs = addCurrencyPair(currencyPair);
+        } else {
+            pageModel.currencyPairs = removeCurrencyPair(currencyPair);
+        }
+        console.log('Currency pairs:', pageModel.currencyPairs);
+    }
 
 </script>
 </body>
