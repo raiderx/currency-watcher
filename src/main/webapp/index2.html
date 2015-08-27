@@ -88,6 +88,10 @@
         return currencyPairs;
     }
 
+    /**
+     * Adds given currency pair to local storage and returns new array of currency pairs.
+     * If local storage already contains given currency pair then such pair will not be added.
+     */
     function addCurrencyPair(currencyPair) {
         var currencyPairs = loadCurrencyPairs();
         if ($.inArray(currencyPair, currencyPairs) < 0) {
@@ -99,6 +103,10 @@
         return currencyPairs;
     }
 
+    /**
+     * Removes given currency pair from local storage and returns new array of currency pairs.
+     * If local storage does not contain given currency pair then array of currency pair will not be changed.
+     */
     function removeCurrencyPair(currencyPair) {
         var currencyPairs = loadCurrencyPairs();
         if (currencyPairs.length > 0) {
