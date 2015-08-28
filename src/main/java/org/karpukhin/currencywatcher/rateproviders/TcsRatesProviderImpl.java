@@ -96,6 +96,8 @@ public class TcsRatesProviderImpl implements RatesProvider {
         assertNotNull(rateNode, "Parameter 'rateNode' can not be null");
         assertTrue(rateNode != NullNode.instance, "Element of field 'rates' can not be null");
 
+        logger.debug("Parsing rate node: {}", rateNode);
+
         if (!rateNode.hasNonNull(CATEGORY_FIELD) || !rateNode.hasNonNull(FROM_CURRENCY_FIELD) || !rateNode.hasNonNull(TO_CURRENCY_FIELD)) {
             throw new ApplicationException("Format of field 'rates' was changed: " +
                     "can not find one of fields 'category', 'fromCurrency' or 'toCurrency'");
@@ -118,14 +120,24 @@ public class TcsRatesProviderImpl implements RatesProvider {
         rate.setToCurrency(rateNode.at(TO_CURRENCY_EXPR).asText());
 
         if (rateNode.hasNonNull(BUY_FIELD)) {
-            rate.setBuy(new BigDecimal(rateNode.at(BUY_EXPR).asText()));
+            rate.setBuy(stringToBigDecimal(rateNode.at(BUY_EXPR).asText()));
         }
 
         if (rateNode.hasNonNull(SELL_FIELD)) {
-            rate.setSell(new BigDecimal(rateNode.at(SELL_EXPR).asText()));
+            rate.setSell(stringToBigDecimal(rateNode.at(SELL_EXPR).asText()));
         }
 
         return rate;
+    }
+
+    /**
+     * Returns instance of BigDecimal with number converted from given string value
+     *
+     * @param str string representation of number
+     * @return instance of BigDecimal with number converted from given string value
+     */
+    static BigDecimal stringToBigDecimal(String str) {
+        return new BigDecimal(str).setScale(2, BigDecimal.ROUND_HALF_EVEN).stripTrailingZeros();
     }
 
     enum TcsOperationCategories {
