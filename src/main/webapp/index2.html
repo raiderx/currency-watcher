@@ -36,6 +36,7 @@
 </div>
 
 <div id="root">
+
     <table class="rates">
         <tr>
             <th>Bank</th>
@@ -48,24 +49,6 @@
             <th>Created</th>
         </tr>
     </table>
-
-    <div id="chart_usd_rub">
-        <label><input type="radio" name="usd_rub_period" value="day" checked="checked"/>Day</label>
-        <label><input type="radio" name="usd_rub_period" value="week"/>Week</label>
-        <label><input type="radio" name="usd_rub_period" value="month"/>Month</label>
-        <label><input type="radio" name="usd_rub_period" value="custom"/>Custom</label>
-
-        <figure style="height: 300px;"></figure>
-    </div>
-
-    <div id="chart_eur_rub">
-        <label><input type="radio" name="eur_rub_period" value="day" checked="checked"/>Day</label>
-        <label><input type="radio" name="eur_rub_period" value="week"/>Week</label>
-        <label><input type="radio" name="eur_rub_period" value="month"/>Month</label>
-        <label><input type="radio" name="eur_rub_period" value="custom"/>Custom</label>
-
-        <figure style="height: 300px;"></figure>
-    </div>
 
 </div>
 
@@ -80,6 +63,17 @@
         <td> <%- spread %> </td>
         <td> <%- created %> </td>
     </tr>
+</script>
+
+<script type="text/template" id="tpl-chart">
+    <div id="chart_<%- id %>">
+        <label><input type="radio" name="period_<%- id %>" value="day" checked="checked"/>Day</label>
+        <label><input type="radio" name="period_<%- id %>" value="week"/>Week</label>
+        <label><input type="radio" name="period_<%- id %>" value="month"/>Month</label>
+        <!--<label><input type="radio" name="period_<%- id %>" value="custom"/>Custom</label>-->
+
+        <figure style="height: 300px;"></figure>
+    </div>
 </script>
 
 <script type="application/javascript" src="js/vendor/d3.min.js"></script>
@@ -168,6 +162,9 @@
         return $.inArray(currencyPair, pageModel.currencyPairs) >= 0;
     }
 
+    /**
+     * Initializes chart for given currency pair
+     */
     function initChart(currencyPair) {
         var suffix = currencyPair.replace('/', '_').toLowerCase();
         var fromCurrency = currencyPair.split('/')[0];
@@ -188,9 +185,13 @@
             tickFormatX: function(x) { return d3.time.format('%d.%m.%y %H:%M')(x); }
         };
 
+        var chartTpl = _.template( $('#tpl-chart').html() );
+
+        $('#root').append( chartTpl( { id: suffix } ) );
+
         var chart = new xChart('line-dotted', data, '#chart_' + suffix + ' figure', opts);
 
-        var $inputs = $('#chart_' + suffix + ' input[name=' + suffix + '_period]');
+        var $inputs = $('#chart_' + suffix + ' input[name=period_' + suffix + ']');
         $inputs.on('change', function(event) {
             var $input = $(event.target);
             if ($input.is(':checked')) {
@@ -233,15 +234,13 @@
 
         initPageModel();
 
-        initChart('USD/RUB');
-        initChart('EUR/RUB');
-
         var currencyPairInputs = $('input[type=checkbox].currencyPair');
         currencyPairInputs.each(function() {
 
             var $input = $(this);
             if ($.inArray($input.val(), pageModel.currencyPairs) >= 0) {
                 $input.attr('checked', 'checked');
+                initChart($input.val());
             }
 
         });
@@ -249,8 +248,11 @@
             var $input = $(event.target);
             if ( $input.is(':checked') ) {
                 client.send('/queue/category', null, pageModel.category);
+                initChart($input.val());
             } else {
-                $('#rate_' + $input.val().replace('/', '_').toLowerCase()).remove();
+                var suffix = $input.val().replace('/', '_').toLowerCase();
+                $('#rate_' + suffix).remove();
+                $('#chart_' + suffix).remove();
             }
             currencyPairsChanged(event);
         });
