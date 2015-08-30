@@ -27,6 +27,7 @@ public class RateWto {
     private String buyDiff;
     private String sell;
     private String sellDiff;
+    private String spread;
     private String created;
 
     public static List<RateWto> convert(List<Rate> rates) {
@@ -44,6 +45,7 @@ public class RateWto {
             wto.buyDiff = getDiff(rate.getLongBuyDiff());
             wto.sell = getValue(rate.getSell(), rate.getLongSellDiff(), numberFormat);
             wto.sellDiff = getDiff(rate.getLongSellDiff());
+            wto.spread = rate.getSpread() != null ? numberFormat.format(rate.getSpread()) : null;
             wto.created = rate.getCreated() != null ? dateTimeFormatter.print(rate.getCreated()) : null;
             result.add(wto);
         }
@@ -84,6 +86,10 @@ public class RateWto {
 
     public String getSellDiff() {
         return sellDiff;
+    }
+
+    public String getSpread() {
+        return spread;
     }
 
     public String getCreated() {

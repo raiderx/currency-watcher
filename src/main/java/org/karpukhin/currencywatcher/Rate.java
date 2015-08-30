@@ -15,6 +15,7 @@ import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 
 /**
@@ -81,6 +82,8 @@ public class Rate {
     private BigDecimal sellDiff;
     @Column(name = "LONG_SELL_DIFF", precision = 10, scale = 2)
     private BigDecimal longSellDiff;
+    @Transient
+    private BigDecimal spread;
     @Column(name = "CREATED", nullable = false)
     @Type(type = "org.karpukhin.currencywatcher.jodatime.hibernate.PersistentDateTime")
     private DateTime created;
@@ -179,6 +182,16 @@ public class Rate {
 
     public void setLongSellDiff(BigDecimal longSellDiff) {
         this.longSellDiff = longSellDiff;
+    }
+
+    public BigDecimal getSpread() {
+        if (spread != null) {
+            return spread;
+        }
+        if (buy != null && sell != null) {
+            spread = sell.subtract(buy).abs();
+        }
+        return spread;
     }
 
     public DateTime getCreated() {

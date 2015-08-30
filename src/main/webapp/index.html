@@ -39,6 +39,7 @@
             <th>To currency</th>
             <th>Buy</th>
             <th>Sell</th>
+            <th>Spread</th>
             <th>Created</th>
         </tr>
     </script>
@@ -52,6 +53,7 @@
             <td> <%- toCurrency %> </td>
             <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
             <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
+            <td> <%- spread %> </td>
             <td> <%- created %> </td>
         </tr>
     </script>
