@@ -14,6 +14,12 @@
         .green {
             color: green;
         }
+        #tt {
+            background: #eee;
+            border-radius: 3px;
+            padding: 5px;
+            position: absolute;
+        }
     </style>
 </head>
 <body>
@@ -172,17 +178,26 @@
             xScale: 'ordinal',
             yScale: 'linear',
             main: [{
-                className: '.' + fromCurrency.toLowerCase() + '.buy',
+                className: '.' + fromCurrency.toLowerCase() + '.sell',
                 data: []
             }, {
-                className: '.' + fromCurrency.toLowerCase() + '.sell',
+                className: '.' + fromCurrency.toLowerCase() + '.buy',
                 data: []
             }]
         };
         var opts = {
             interpolation: 'linear',
             dataFormatX: function(x) { return d3.time.format('%d.%m.%Y %H:%M:%S').parse(x); },
-            tickFormatX: function(x) { return d3.time.format('%d.%m.%y %H:%M')(x); }
+            tickFormatX: function(x) { return d3.time.format('%d.%m.%y %H:%M')(x); },
+            mouseover: function (d, i) {
+                var pos = $(this).offset();
+                $('#tt').text(d3.time.format('%d.%m.%y %H:%M')(d.x) + ', ' + d.label + ': ' + d.y.toFixed(2))
+                        .css({ top: pos.top - 32, left: pos.left})
+                        .show();
+            },
+            mouseout: function() {
+                $('#tt').hide();
+            }
         };
 
         var chartTpl = _.template( $('#tpl-chart').html() );
@@ -203,6 +218,12 @@
 
         updateChart(chart, currencyPair, period);
 
+        var tt = $('#tt');
+        if (tt.length == 0) {
+            tt = $('<div id="tt"/>');
+        }
+        $('body').append(tt);
+
         return chart;
     }
 
@@ -219,11 +240,11 @@
                 xScale: 'ordinal',
                 yScale: 'linear',
                 main: [{
-                    className: '.' + fromCurrency.toLowerCase() + '.buy',
-                    data: buyData
-                }, {
                     className: '.' + fromCurrency.toLowerCase() + '.sell',
                     data: sellData
+                }, {
+                    className: '.' + fromCurrency.toLowerCase() + '.buy',
+                    data: buyData
                 }]
             };
             chart.setData(data);
