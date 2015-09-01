@@ -65,6 +65,7 @@
 <script type="application/javascript" src="js/vendor/jquery-min.js"></script>
 <script type="application/javascript" src="js/vendor/stomp.min.js"></script>
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
+<script type="application/javascript" src="js/currency-watcher.js"></script>
 <script type="application/javascript">
 
     var contextPath = '';
@@ -75,60 +76,10 @@
         rates: []
     };
 
-    /**
-     * Returns array of currency pairs from local storage
-     */
-    function loadCurrencyPairs() {
-        var currencyPairsStr = localStorage.getItem('currencyPairs');
-        console.log('currencyPairsStr:', currencyPairsStr);
-        var currencyPairs = [];
-        try {
-            currencyPairs = currencyPairsStr ? JSON.parse(currencyPairsStr) : [];
-        } catch (e) {
-            console.error(e);
-        }
-        return currencyPairs;
-    }
-
-    /**
-     * Adds given currency pair to local storage and returns new array of currency pairs.
-     * If local storage already contains given currency pair then such pair will not be added.
-     */
-    function addCurrencyPair(currencyPair) {
-        var currencyPairs = loadCurrencyPairs();
-        if ($.inArray(currencyPair, currencyPairs) < 0) {
-            currencyPairs.push(currencyPair);
-            localStorage.setItem('currencyPairs', JSON.stringify(currencyPairs));
-        } else {
-            console.log('Currency pair', currencyPair, 'already is in storage');
-        }
-        return currencyPairs;
-    }
-
-    /**
-     * Removes given currency pair from local storage and returns new array of currency pairs.
-     * If local storage does not contain given currency pair then array of currency pair will not be changed.
-     */
-    function removeCurrencyPair(currencyPair) {
-        var currencyPairs = loadCurrencyPairs();
-        if (currencyPairs.length > 0) {
-            var i = $.inArray(currencyPair, currencyPairs);
-            if (i == currencyPairs.length - 1) {
-                currencyPairs.pop();
-            } else if (i > 0) {
-                currencyPairs = currencyPairs.slice(0, i).concat(currencyPairs.slice(i + 1));
-            } else if (i == 0) {
-                currencyPairs = currencyPairs.slice(i + 1);
-            }
-            localStorage.setItem('currencyPairs', JSON.stringify(currencyPairs));
-        } else {
-            console.log('No any currency pair in storage');
-        }
-        return currencyPairs;
-    }
+    var storage = new StorageWrapper();
 
     function initPageModel() {
-        pageModel.currencyPairs = loadCurrencyPairs();
+        pageModel.currencyPairs = storage.loadCurrencyPairs();
         pageModel.category = $('select[name=category]').val();
     }
 
@@ -221,9 +172,9 @@
         var $input = $(event.target);
         var currencyPair = $input.val();
         if ($input.is(':checked')) {
-            pageModel.currencyPairs = addCurrencyPair(currencyPair);
+            pageModel.currencyPairs = storage.addCurrencyPair(currencyPair);
         } else {
-            pageModel.currencyPairs = removeCurrencyPair(currencyPair);
+            pageModel.currencyPairs = storage.removeCurrencyPair(currencyPair);
         }
         console.log('Currency pairs:', pageModel.currencyPairs);
     }

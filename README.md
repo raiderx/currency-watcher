@@ -3,7 +3,7 @@ Currency Exchange Rates Watcher
 
 Web application monitors changes in foreign exchange rates.
 
-Developed using Spring Framework, Hibernate, Jackson JSON Processor, Websockets, jQuery,
+Developed using Spring Framework, Jackson JSON Processor, Hibernate, MySQL, Websockets, jQuery,
 Backbone.js and Underscore.js.
 
 Application requires JRE 7.
