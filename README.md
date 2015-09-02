@@ -28,3 +28,13 @@ Create tables:
 ```
 $ mysql -u rates -p rates < sql/mysql_schema.sql
 ```
+
+Add options to CATALINA_OPTS variable:
+
+`-DcurrencyWatcherConfig=/currency-watcher/src/main/config -DcurrencyWatcherLogs=/currency-watcher/log`
+
+where: 
+
+- currencyWatcherConfig - path to directory with application config,
+ 
+- currencyWatcherLogs - path to directory with application logs.
