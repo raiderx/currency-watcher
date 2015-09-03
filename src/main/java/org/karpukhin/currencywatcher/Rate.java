@@ -70,16 +70,40 @@ public class Rate {
     private String fromCurrency;
     @Column(name = "TO_CURRENCY", nullable = false, length = 10)
     private String toCurrency;
+
+    /**
+     * Current buy value
+     */
     @Column(name = "BUY", precision = 10, scale = 2)
     private BigDecimal buy;
+
+    /**
+     * Difference between current buy value and past
+     */
     @Column(name = "BUY_DIFF", precision = 10, scale = 2)
     private BigDecimal buyDiff;
+
+    /**
+     * Difference between current buy value and past pivot point
+     */
     @Column(name = "LONG_BUY_DIFF", precision = 10, scale = 2)
     private BigDecimal longBuyDiff;
+
+    /**
+     * Current sell value
+     */
     @Column(name = "SELL", precision = 10, scale = 2)
     private BigDecimal sell;
+
+    /**
+     * Difference between current sell value and past
+     */
     @Column(name = "SELL_DIFF", precision = 10, scale = 2)
     private BigDecimal sellDiff;
+
+    /**
+     * Difference between current sell value and past pivot point
+     */
     @Column(name = "LONG_SELL_DIFF", precision = 10, scale = 2)
     private BigDecimal longSellDiff;
     @Transient

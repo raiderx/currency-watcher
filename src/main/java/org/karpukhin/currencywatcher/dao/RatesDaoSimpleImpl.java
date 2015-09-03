@@ -2,7 +2,6 @@ package org.karpukhin.currencywatcher.dao;
 
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;

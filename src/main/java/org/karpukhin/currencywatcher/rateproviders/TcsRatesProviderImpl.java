@@ -3,6 +3,7 @@ package org.karpukhin.currencywatcher.rateproviders;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.OperationCategories;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +45,14 @@ public class TcsRatesProviderImpl implements RatesProvider {
     private static final String BUY_EXPR = "/buy";
     private static final String SELL_EXPR = "/sell";
 
+    private static final ObjectReader reader = new ObjectMapper().reader();
+
     public List<Rate> parseStream(InputStream stream) throws IOException {
         assertNotNull(stream, "Parameter 'stream' can not be null");
 
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode;
         try {
-            rootNode = mapper.readTree(stream);
+            rootNode = reader.readTree(stream);
         } catch (JsonProcessingException e) {
             throw new ApplicationException("Can not read JSON from stream", e);
         }

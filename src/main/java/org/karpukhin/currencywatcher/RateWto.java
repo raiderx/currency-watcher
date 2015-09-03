@@ -100,11 +100,10 @@ public class RateWto {
         if (value == null) {
             return null;
         }
-        StringBuilder sb = new StringBuilder(format.format(value));
         if (diff != null && diff.compareTo(BigDecimal.ZERO) != 0) {
-            sb.append(" (").append(format.format(diff)).append(")");
+            return format.format(value) + " (" + format.format(diff) + ")";
         }
-        return sb.toString();
+        return format.format(value);
     }
 
     static String getDiff(BigDecimal diff) {
