@@ -1,5 +1,6 @@
 package org.karpukhin.currencywatcher.dao;
 
+import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 
@@ -31,4 +32,6 @@ public interface RatesDao {
      * @return  list of rates with given bank name and operation category
      */
     List<Rate> getLastRates(String bankName, OperationCategories category);
+
+    List<Rate> getRates(String bankName, OperationCategories category, String fromCurrency, String toCurrency, DateTime fromDate, DateTime toDate);
 }

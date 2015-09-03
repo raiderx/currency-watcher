@@ -1,5 +1,6 @@
 package org.karpukhin.currencywatcher.dao;
 
+import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RatesDaoSimpleImpl implements RatesDao {
 
     private Map<MapKey, Rate> latestRates = new ConcurrentHashMap<>();
+    private List<Rate> rates = new ArrayList<>();
 
     @Override
     public Rate getLastRate(String bankName, OperationCategories category, String fromCurrency, String toCurrency) {
@@ -26,6 +28,7 @@ public class RatesDaoSimpleImpl implements RatesDao {
     @Override
     public void createRate(Rate rate) {
         latestRates.put(new MapKey(rate), rate);
+        rates.add(rate);
     }
 
     @Override
@@ -44,6 +47,19 @@ public class RatesDaoSimpleImpl implements RatesDao {
         List<Rate> result = new ArrayList<>();
         for (Rate rate : latestRates.values()) {
             if (Objects.equals(rate.getBankName(), bankName) && Objects.equals(rate.getCategory(), category)) {
+                result.add(rate);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<Rate> getRates(String bankName, OperationCategories category, String fromCurrency, String toCurrency, DateTime fromDate, DateTime toDate) {
+        List<Rate> result = new ArrayList<>();
+        for(Rate rate : rates) {
+            if (rate.getBankName().equals(bankName) && rate.getCategory() == category &&
+                    rate.getFromCurrency().equals(fromCurrency) && rate.getToCurrency().equals(toCurrency) &&
+                    rate.getBankTime().isAfter(fromDate) && rate.getBankTime().isBefore(toDate)) {
                 result.add(rate);
             }
         }

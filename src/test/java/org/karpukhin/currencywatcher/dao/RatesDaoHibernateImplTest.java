@@ -69,4 +69,12 @@ public class RatesDaoHibernateImplTest {
         List<Rate> result = ratesDao.getLastRates("DUMMY_BANK", OperationCategories.DEBIT_CARDS_TRANSFERS);
         assertThat(result, is(not(nullValue())));
     }
+
+    @Test
+    public void testGetRatesByDate() {
+        DateTime fromDate = new DateTime(2015, 2, 6, 0, 0);
+        DateTime toDate = new DateTime(2015, 2, 7, 0, 0);
+        List<Rate> result = ratesDao.getRates("DUMMY_BANK", OperationCategories.DEBIT_CARDS_TRANSFERS, "USD", "RUB", fromDate, toDate);
+        assertThat(result, is(not(nullValue())));
+    }
 }

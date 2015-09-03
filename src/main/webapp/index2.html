@@ -3,6 +3,7 @@
 <head lang="en">
     <title> Home </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="css/xcharts.min.css"/>
     <style>
         table.rates {
             width: 100%;
@@ -12,6 +13,12 @@
         }
         .green {
             color: green;
+        }
+        #tt {
+            background: #eee;
+            border-radius: 3px;
+            padding: 5px;
+            position: absolute;
         }
     </style>
 </head>
@@ -35,6 +42,7 @@
 </div>
 
 <div id="root">
+
     <table class="rates">
         <tr>
             <th>Bank</th>
@@ -47,6 +55,7 @@
             <th>Created</th>
         </tr>
     </table>
+
 </div>
 
 <script type="text/template" id="tpl-rate">
@@ -62,9 +71,22 @@
     </tr>
 </script>
 
+<script type="text/template" id="tpl-chart">
+    <div id="chart_<%- id %>">
+        <label><input type="radio" name="period_<%- id %>" value="day" checked="checked"/>Day</label>
+        <label><input type="radio" name="period_<%- id %>" value="week"/>Week</label>
+        <label><input type="radio" name="period_<%- id %>" value="month"/>Month</label>
+        <!--<label><input type="radio" name="period_<%- id %>" value="custom"/>Custom</label>-->
+
+        <figure style="height: 300px;"></figure>
+    </div>
+</script>
+
+<script type="application/javascript" src="js/vendor/d3.min.js"></script>
 <script type="application/javascript" src="js/vendor/jquery-min.js"></script>
 <script type="application/javascript" src="js/vendor/stomp.min.js"></script>
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
+<script type="application/javascript" src="js/vendor/xcharts.min.js"></script>
 <script type="application/javascript" src="js/currency-watcher.js"></script>
 <script type="application/javascript">
 
@@ -97,6 +119,89 @@
         return $.inArray(currencyPair, pageModel.currencyPairs) >= 0;
     }
 
+    /**
+     * Initializes chart for given currency pair
+     */
+    function initChart(currencyPair) {
+        var suffix = currencyPair.replace('/', '_').toLowerCase();
+        var fromCurrency = currencyPair.split('/')[0];
+        var data = {
+            xScale: 'ordinal',
+            yScale: 'linear',
+            main: [{
+                className: '.' + fromCurrency.toLowerCase() + '.sell',
+                data: []
+            }, {
+                className: '.' + fromCurrency.toLowerCase() + '.buy',
+                data: []
+            }]
+        };
+        var opts = {
+            interpolation: 'linear',
+            dataFormatX: function(x) { return d3.time.format('%d.%m.%Y %H:%M:%S').parse(x); },
+            tickFormatX: function(x) { return d3.time.format('%d.%m.%y %H:%M')(x); },
+            mouseover: function (d, i) {
+                var pos = $(this).offset();
+                $('#tt').text(d3.time.format('%d.%m.%y %H:%M')(d.x) + ', ' + d.label + ': ' + d.y.toFixed(2))
+                        .css({ top: pos.top - 32, left: pos.left})
+                        .show();
+            },
+            mouseout: function() {
+                $('#tt').hide();
+            }
+        };
+
+        var chartTpl = _.template( $('#tpl-chart').html() );
+
+        $('#root').append( chartTpl( { id: suffix } ) );
+
+        var chart = new xChart('line-dotted', data, '#chart_' + suffix + ' figure', opts);
+
+        var $inputs = $('#chart_' + suffix + ' input[name=period_' + suffix + ']');
+        $inputs.on('change', function(event) {
+            var $input = $(event.target);
+            if ($input.is(':checked')) {
+                updateChart(chart, currencyPair, $input.val());
+            }
+        });
+
+        var period = $inputs.filter(':checked').val();
+
+        updateChart(chart, currencyPair, period);
+
+        var tt = $('#tt');
+        if (tt.length == 0) {
+            tt = $('<div id="tt"/>');
+        }
+        $('body').append(tt);
+
+        return chart;
+    }
+
+    function updateChart(chart, currencyPair, period) {
+        $.get(contextPath + '/api/currencypairrates', { period: period, currencyPair: currencyPair }, function(response) {
+            var fromCurrency = currencyPair.split('/')[0];
+            var buyData = [];
+            var sellData = [];
+            $.each(response, function(index, rate) {
+                buyData.push({x: rate.dateTime, y: parseFloat(rate.buy.replace(',', '.')), label: fromCurrency + ' BUY'});
+                sellData.push({x: rate.dateTime, y: parseFloat(rate.sell.replace(',', '.')), label: fromCurrency + ' SELL'});
+            });
+            var data = {
+                xScale: 'ordinal',
+                yScale: 'linear',
+                main: [{
+                    className: '.' + fromCurrency.toLowerCase() + '.sell',
+                    data: sellData
+                }, {
+                    className: '.' + fromCurrency.toLowerCase() + '.buy',
+                    data: buyData
+                }]
+            };
+            chart.setData(data);
+        });
+    }
+
     $(function() {
 
         initPageModel();
@@ -107,6 +212,7 @@
             var $input = $(this);
             if ($.inArray($input.val(), pageModel.currencyPairs) >= 0) {
                 $input.attr('checked', 'checked');
+                initChart($input.val());
             }
 
         });
@@ -114,8 +220,11 @@
             var $input = $(event.target);
             if ( $input.is(':checked') ) {
                 client.send('/queue/category', null, pageModel.category);
+                initChart($input.val());
             } else {
-                $('#rate_' + $input.val().replace('/', '_').toLowerCase()).remove();
+                var suffix = $input.val().replace('/', '_').toLowerCase();
+                $('#rate_' + suffix).remove();
+                $('#chart_' + suffix).remove();
             }
             currencyPairsChanged(event);
         });

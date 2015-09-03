@@ -2,6 +2,7 @@ package org.karpukhin.currencywatcher.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.OperationCategories;
 import org.karpukhin.currencywatcher.Rate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,21 @@ public class RatesDaoHibernateImpl implements RatesDao {
                 .getNamedQuery("lastRatesByCategory")
                 .setString("bankName", bankName)
                 .setString("category", category.name())
+                .list();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    public List<Rate> getRates(String bankName, OperationCategories category, String fromCurrency, String toCurrency, DateTime fromDate, DateTime toDate) {
+        return getSession()
+                .getNamedQuery("ratesByDate")
+                .setParameter("bankName", bankName)
+                .setParameter("category", category)
+                .setParameter("fromCurrency", fromCurrency)
+                .setParameter("toCurrency", toCurrency)
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
                 .list();
     }
 

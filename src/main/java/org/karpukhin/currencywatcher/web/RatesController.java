@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,7 +61,7 @@ public class RatesController {
     }
 
     @MessageMapping("/queue/category")
-    public void getAsyncRates(String category) {
+    public void getCategoryRates(String category) {
         if (StringUtils.hasText(category)) {
             OperationCategories cat = OperationCategories.valueOf(category.toUpperCase());
             List<Rate> rates = ratesService.getRates(cat);
@@ -73,5 +74,18 @@ public class RatesController {
     public void sendRate(RatesUpdatedEvent event) {
         List<RateWto> rates = RateWto.convert(event.getRates());
         template.convertAndSend("/topic/category/" + event.getCategory(), rates);
+    }
+
+    @RequestMapping(value = "/currencypairrates", method = RequestMethod.GET)
+    public List<SimpleRateWto> getCurrencyPairRates(String period, String currencyPair) {
+        List<Rate> rates = new ArrayList<>();
+        if ("day".equals(period)) {
+            rates = ratesService.getCurrencyPairDayRates(currencyPair);
+        } else if ("week".equals(period)) {
+            rates = ratesService.getCurrencyPairWeekRates(currencyPair);
+        } else if ("month".equals(period)) {
+            rates = ratesService.getCurrencyPairMonthRates(currencyPair);
+        }
+        return SimpleRateWto.convert(rates);
     }
 }
