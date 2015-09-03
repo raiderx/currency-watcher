@@ -4,9 +4,12 @@ Currency Exchange Rates Watcher
 Web application monitors changes in foreign exchange rates.
 
 Developed using Spring Framework, Jackson JSON Processor, Hibernate, MySQL, Websockets, jQuery,
-Backbone.js and Underscore.js.
+Backbone.js, Underscore.js and xCharts.
 
-Application requires JRE 7.
+Application requires:
+
+* JRE 7,
+* Apache Tomcat 7 at least.
 
 ###Screenshots###
 
@@ -36,5 +39,4 @@ Add options to CATALINA_OPTS variable:
 where: 
 
 - currencyWatcherConfig - path to directory with application config,
- 
 - currencyWatcherLogs - path to directory with application logs.
