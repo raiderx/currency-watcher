@@ -9,7 +9,9 @@
                            http://www.springframework.org/schema/mvc       http://www.springframework.org/schema/mvc/spring-mvc.xsd
                            http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd">
 
-    <context:component-scan base-package="org.karpukhin.currencywatcher.web"/>
+    <context:component-scan base-package="org.karpukhin.currencywatcher.web">
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+    </context:component-scan>
 
     <mvc:annotation-driven/>
 
