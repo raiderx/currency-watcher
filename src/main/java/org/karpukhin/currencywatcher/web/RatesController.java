@@ -77,14 +77,15 @@ public class RatesController {
     }
 
     @RequestMapping(value = "/currencypairrates", method = RequestMethod.GET)
-    public List<SimpleRateWto> getCurrencyPairRates(String period, String currencyPair) {
+    public List<SimpleRateWto> getCurrencyPairRates(String currencyPair, String category, String period) {
         List<Rate> rates = new ArrayList<>();
+        OperationCategories cat = OperationCategories.valueOf(category.toUpperCase());
         if ("day".equals(period)) {
-            rates = ratesService.getCurrencyPairDayRates(currencyPair);
+            rates = ratesService.getCurrencyPairDayRates(currencyPair, cat);
         } else if ("week".equals(period)) {
-            rates = ratesService.getCurrencyPairWeekRates(currencyPair);
+            rates = ratesService.getCurrencyPairWeekRates(currencyPair, cat);
         } else if ("month".equals(period)) {
-            rates = ratesService.getCurrencyPairMonthRates(currencyPair);
+            rates = ratesService.getCurrencyPairMonthRates(currencyPair, cat);
         }
         return SimpleRateWto.convert(rates);
     }

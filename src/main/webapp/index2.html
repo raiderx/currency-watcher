@@ -32,6 +32,7 @@
         <option value="DEPOSIT_PAYMENTS">Deposit Payments</option>
         <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
         <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
+        <option value="SAVING_ACCOUNT_TRANSFERS">Saving Account Transfers</option>
     </select></label>
 
     Currency:
@@ -179,7 +180,12 @@
     }
 
     function updateChart(chart, currencyPair, period) {
-        $.get(contextPath + '/api/currencypairrates', { period: period, currencyPair: currencyPair }, function(response) {
+        var params = {
+            currencyPair: currencyPair,
+            category: pageModel.category,
+            period: period
+        };
+        $.get(contextPath + '/api/currencypairrates', params, function(response) {
             var fromCurrency = currencyPair.split('/')[0];
             var buyData = [];
             var sellData = [];
