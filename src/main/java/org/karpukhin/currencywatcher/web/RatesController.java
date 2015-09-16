@@ -3,8 +3,11 @@ package org.karpukhin.currencywatcher.web;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import org.karpukhin.currencywatcher.model.OperationCategories;
+import org.karpukhin.currencywatcher.model.Quote;
+import org.karpukhin.currencywatcher.model.QuotesUpdatedEvent;
 import org.karpukhin.currencywatcher.model.Rate;
 import org.karpukhin.currencywatcher.model.RatesUpdatedEvent;
+import org.karpukhin.currencywatcher.service.QuotesService;
 import org.karpukhin.currencywatcher.service.RatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,6 +36,9 @@ public class RatesController {
 
     @Autowired
     private EventBus eventBus;
+
+    @Autowired
+    private QuotesService quotesService;
 
     @Autowired
     private RatesService ratesService;
@@ -69,10 +76,21 @@ public class RatesController {
         }
     }
 
+    @MessageMapping("/queue/quotes")
+    public void getQuotes() {
+        Collection<Quote> quotes = quotesService.getQuotes();
+        template.convertAndSend("/topic/quotes", QuoteWto.convert(quotes));
+    }
+
     @Subscribe
     public void sendRate(RatesUpdatedEvent event) {
         List<RateWto> rates = RateWto.convert(event.getRates());
         template.convertAndSend("/topic/category/" + event.getCategory(), rates);
+    }
+
+    @Subscribe
+    public void sendQuotes(QuotesUpdatedEvent event) {
+        template.convertAndSend("/topic/quotes", QuoteWto.convert(event.getQuotes()));
     }
 
     @RequestMapping(value = "/currencypairrates", method = RequestMethod.GET)

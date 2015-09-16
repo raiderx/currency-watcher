@@ -55,6 +55,8 @@
             <th>Sell</th>
             <th>Average</th>
             <th>Spread</th>
+            <th>Quote</th>
+            <th>Forecast</th>
         </tr>
     </table>
 
@@ -68,6 +70,8 @@
         <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
         <td> <%- average %> </td>
         <td> <%- spread %> (<%- (100 * spread / average).toFixed() %>%)</td>
+        <td> <span> </span> </td>
+        <td> <span> </span> </td>
     </tr>
 </script>
 
@@ -242,6 +246,48 @@
             client.send('/queue/category', null, category);
         }
 
+        function askUpdateQuotes() {
+            client.send('/queue/quotes');
+        }
+
+        function quotesUpdated(m) {
+            var quotes = JSON.parse(m.body);
+            $.each(quotes, function(index, quote) {
+                console.log(quote);
+                if ( isCurrencyPairSelected(quote.name) ) {
+                    var $trEl = $('#rate_' + quote.name.replace('/', '_').toLowerCase());
+                    var $averageEl = $('td:eq(4)', $trEl);
+                    var $quoteEl = $('td:eq(6) span', $trEl);
+                    var $forecastEl = $('td:eq(7) span', $trEl);
+
+                    var prevValue = $quoteEl.text();
+                    $quoteEl.text(quote.value.toFixed(2));
+                    if (prevValue && prevValue.trim() != '') {
+                        if (quote.value > prevValue) {
+                            $quoteEl.addClass('green');
+                            setTimeout(function () {
+                                $quoteEl.removeClass('green');
+                            }, 4000);
+                        } else if (quote.value < prevValue) {
+                            $quoteEl.addClass('red');
+                            setTimeout(function () {
+                                $quoteEl.removeClass('red');
+                            }, 4000);
+                        }
+                    }
+
+                    var diff = (quote.value - $averageEl.text()).toFixed(2);
+                    $forecastEl.text(diff > 0 ? '+' + diff : diff);
+                    $forecastEl.removeClass('green red');
+                    if (diff > 0) {
+                        $forecastEl.addClass('green');
+                    } else if (diff < 0) {
+                        $forecastEl.addClass('red');
+                    }
+                }
+            });
+        }
+
         var rateTpl = _.template( $('#tpl-rate').html() );
 
         function categoryRatesUpdated(m) {
@@ -254,9 +300,12 @@
                 }
 
             });
+            askUpdateQuotes();
         }
 
         function onConnect() {
+            client.subscribe('/topic/quotes', quotesUpdated);
+
             var $selectEl = $('select[name=category]');
             $('option', $selectEl).each(function() {
                 var value = $(this).attr('value');

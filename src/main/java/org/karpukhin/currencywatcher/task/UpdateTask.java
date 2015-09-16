@@ -3,8 +3,12 @@ package org.karpukhin.currencywatcher.task;
 import org.joda.time.DateTime;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
 import org.karpukhin.currencywatcher.model.Rate;
+import org.karpukhin.currencywatcher.model.Quote;
+import org.karpukhin.currencywatcher.rateproviders.QuotesProvider;
 import org.karpukhin.currencywatcher.rateproviders.RatesProvider;
 import org.karpukhin.currencywatcher.rateproviders.TcsRatesProviderImpl;
+import org.karpukhin.currencywatcher.rateproviders.YahooQuotesProvider;
+import org.karpukhin.currencywatcher.service.QuotesService;
 import org.karpukhin.currencywatcher.service.RatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -68,13 +73,18 @@ public class UpdateTask {
     private TaskScheduler taskExecutor;
 
     @Autowired
+    private QuotesService quotesService;
+
+    @Autowired
     private RatesService ratesService;
 
+    private QuotesProvider quotesProvider;
     private RatesProvider ratesProvider;
 
     private Future future;
 
     public UpdateTask() {
+        this.quotesProvider = new YahooQuotesProvider();
         this.ratesProvider = new TcsRatesProviderImpl();
     }
 
@@ -91,6 +101,13 @@ public class UpdateTask {
 
     void update() {
         logger.info("Update task started");
+
+        try {
+            quotesService.updateQuotes(getQuotes());
+        } catch (Exception e) {
+            logger.error("Error while fetching quotes", e);
+        }
+
         try {
             ratesService.updateRates(getRates());
         } catch (Exception e) {
@@ -113,6 +130,10 @@ public class UpdateTask {
                 return getNextExecutionTime();
             }
         });
+    }
+
+    Collection<Quote> getQuotes() {
+        return quotesProvider.getQuotes("USD/RUB,EUR/RUB,EUR/USD,GBP/RUB");
     }
 
     List<Rate> getRates() {
