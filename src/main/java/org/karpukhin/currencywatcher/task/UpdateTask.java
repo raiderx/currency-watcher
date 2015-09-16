@@ -71,7 +71,7 @@ public class UpdateTask {
     private RatesService ratesService;
 
     private RatesProvider ratesProvider;
-    
+
     private Future future;
 
     public UpdateTask() {
@@ -91,7 +91,11 @@ public class UpdateTask {
 
     void update() {
         logger.info("Update task started");
-        ratesService.updateRates(getRates());
+        try {
+            ratesService.updateRates(getRates());
+        } catch (Exception e) {
+            logger.error("Error while fetching exchange rates", e);
+        }
     }
     
     void reschedule() {

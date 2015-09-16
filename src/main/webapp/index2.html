@@ -46,29 +46,25 @@
 
     <table class="rates">
         <tr>
-            <th>Bank</th>
             <th>Time</th>
-            <th>Category</th>
             <th>Currency Pair</th>
             <th>Buy</th>
             <th>Sell</th>
+            <th>Average</th>
             <th>Spread</th>
-            <th>Created</th>
         </tr>
     </table>
 
 </div>
 
 <script type="text/template" id="tpl-rate">
-    <tr id="rate_<%- fromCurrency.toLowerCase() %>_<%- toCurrency.toLowerCase() %>" class="rate">
-        <td> <%- bankName %> </td>
+    <tr id="rate_<%- currencyPair.replace('/', '_').toLowerCase() %>" class="rate">
         <td> <%- bankTime %> </td>
-        <td> <%- category %> </td>
-        <td> <%- fromCurrency %>/<%- toCurrency %> </td>
+        <td> <%- currencyPair %> </td>
         <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
         <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
-        <td> <%- spread %> </td>
-        <td> <%- created %> </td>
+        <td> <%- average %> </td>
+        <td> <%- spread %> (<%- (100 * spread / average).toFixed() %>%)</td>
     </tr>
 </script>
 
@@ -114,9 +110,7 @@
     /**
      * Returns true if currency pair selected by user
      */
-    function isCurrencyPairSelected(fromCurrency, toCurrency) {
-        //return $('#' + fromCurrency.toLowerCase() + '_' + toCurrency.toLowerCase()).is(':checked');
-        var currencyPair = fromCurrency + '/' + toCurrency;
+    function isCurrencyPairSelected(currencyPair) {
         return $.inArray(currencyPair, pageModel.currencyPairs) >= 0;
     }
 
@@ -190,8 +184,8 @@
             var buyData = [];
             var sellData = [];
             $.each(response, function(index, rate) {
-                buyData.push({x: rate.dateTime, y: parseFloat(rate.buy.replace(',', '.')), label: fromCurrency + ' BUY'});
-                sellData.push({x: rate.dateTime, y: parseFloat(rate.sell.replace(',', '.')), label: fromCurrency + ' SELL'});
+                buyData.push({x: rate.dateTime, y: rate.buy, label: fromCurrency + ' BUY'});
+                sellData.push({x: rate.dateTime, y: rate.sell, label: fromCurrency + ' SELL'});
             });
             var data = {
                 xScale: 'ordinal',
@@ -251,8 +245,8 @@
             var rates = JSON.parse(m.body);
             $.each(rates, function(index, rate) {
 
-                if ( isCategorySelected(rate.category) && isCurrencyPairSelected(rate.fromCurrency, rate.toCurrency) ) {
-                    $('#rate_' + rate.fromCurrency.toLowerCase() + '_' + rate.toCurrency.toLowerCase()).remove();
+                if ( isCategorySelected(rate.category) && isCurrencyPairSelected(rate.currencyPair) ) {
+                    $('#rate_' + rate.currencyPair.replace('/', '_').toLowerCase()).remove();
                     $('table.rates').append( rateTpl( rate ) );
                 }
 

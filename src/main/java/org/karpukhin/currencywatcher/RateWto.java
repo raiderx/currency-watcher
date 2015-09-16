@@ -4,8 +4,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,44 +14,34 @@ import java.util.List;
 public class RateWto {
 
     public static final String DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
-    public static final String NUMBER_FORMAT = "0.00";
 
-    private String bankName;
     private String bankTime;
     private String category;
-    private String fromCurrency;
-    private String toCurrency;
-    private String buy;
+    private String currencyPair;
+    private BigDecimal buy;
     private String buyDiff;
-    private String sell;
+    private BigDecimal sell;
     private String sellDiff;
-    private String spread;
-    private String created;
+    private BigDecimal average;
+    private BigDecimal spread;
 
     public static List<RateWto> convert(List<Rate> rates) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(DATE_TIME_FORMAT);
-        NumberFormat numberFormat = new DecimalFormat(NUMBER_FORMAT);
         List<RateWto> result = new ArrayList<>(rates.size());
         for (Rate rate : rates) {
             RateWto wto = new RateWto();
-            wto.bankName = rate.getBankName();
             wto.bankTime = rate.getBankTime() != null ? dateTimeFormatter.print(rate.getBankTime()) : null;
             wto.category = rate.getCategory() != null ? rate.getCategory().name() : null;
-            wto.fromCurrency = rate.getFromCurrency();
-            wto.toCurrency = rate.getToCurrency();
-            wto.buy = getValue(rate.getBuy(), rate.getLongBuyDiff(), numberFormat);
+            wto.currencyPair = rate.getFromCurrency() + "/" + rate.getToCurrency();
+            wto.buy = rate.getBuy();
             wto.buyDiff = getDiff(rate.getLongBuyDiff());
-            wto.sell = getValue(rate.getSell(), rate.getLongSellDiff(), numberFormat);
+            wto.sell = rate.getSell();
             wto.sellDiff = getDiff(rate.getLongSellDiff());
-            wto.spread = rate.getSpread() != null ? numberFormat.format(rate.getSpread()) : null;
-            wto.created = rate.getCreated() != null ? dateTimeFormatter.print(rate.getCreated()) : null;
+            wto.average = getAverage(rate.getBuy(), rate.getSell());
+            wto.spread = getSpread(rate.getBuy(), rate.getSell());
             result.add(wto);
         }
         return result;
-    }
-
-    public String getBankName() {
-        return bankName;
     }
 
     public String getBankTime() {
@@ -64,15 +52,11 @@ public class RateWto {
         return category;
     }
 
-    public String getFromCurrency() {
-        return fromCurrency;
+    public String getCurrencyPair() {
+        return currencyPair;
     }
 
-    public String getToCurrency() {
-        return toCurrency;
-    }
-
-    public String getBuy() {
+    public BigDecimal getBuy() {
         return buy;
     }
 
@@ -80,7 +64,7 @@ public class RateWto {
         return buyDiff;
     }
 
-    public String getSell() {
+    public BigDecimal getSell() {
         return sell;
     }
 
@@ -88,22 +72,26 @@ public class RateWto {
         return sellDiff;
     }
 
-    public String getSpread() {
+    public BigDecimal getAverage() {
+        return average;
+    }
+
+    public BigDecimal getSpread() {
         return spread;
     }
 
-    public String getCreated() {
-        return created;
+    static BigDecimal getAverage(BigDecimal buy, BigDecimal sell) {
+        if (buy != null && sell != null) {
+            return sell.add(buy).divide(BigDecimal.valueOf(2), 2, BigDecimal.ROUND_HALF_EVEN).stripTrailingZeros();
+        }
+        return null;
     }
 
-    static String getValue(BigDecimal value, BigDecimal diff, NumberFormat format) {
-        if (value == null) {
-            return null;
+    static BigDecimal getSpread(BigDecimal buy, BigDecimal sell) {
+        if (buy != null && sell != null) {
+            return sell.subtract(buy).abs();
         }
-        if (diff != null && diff.compareTo(BigDecimal.ZERO) != 0) {
-            return format.format(value) + " (" + format.format(diff) + ")";
-        }
-        return format.format(value);
+        return null;
     }
 
     static String getDiff(BigDecimal diff) {
