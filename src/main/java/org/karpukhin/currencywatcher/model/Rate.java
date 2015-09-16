@@ -1,4 +1,4 @@
-package org.karpukhin.currencywatcher;
+package org.karpukhin.currencywatcher.model;
 
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;

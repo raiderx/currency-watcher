@@ -29,7 +29,7 @@
                 </prop>-->
             </props>
         </property>
-        <property name="annotatedClasses" value="org.karpukhin.currencywatcher.Rate"/>
+        <property name="annotatedClasses" value="org.karpukhin.currencywatcher.model.Rate"/>
     </bean>
 
     <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">

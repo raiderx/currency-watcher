@@ -1,8 +1,8 @@
 package org.karpukhin.currencywatcher.task;
 
 import org.joda.time.DateTime;
-import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
+import org.karpukhin.currencywatcher.model.Rate;
 import org.karpukhin.currencywatcher.rateproviders.RatesProvider;
 import org.karpukhin.currencywatcher.rateproviders.TcsRatesProviderImpl;
 import org.karpukhin.currencywatcher.service.RatesService;

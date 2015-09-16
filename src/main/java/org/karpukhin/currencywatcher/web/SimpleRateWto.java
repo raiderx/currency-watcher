@@ -2,7 +2,7 @@ package org.karpukhin.currencywatcher.web;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.karpukhin.currencywatcher.Rate;
+import org.karpukhin.currencywatcher.model.Rate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

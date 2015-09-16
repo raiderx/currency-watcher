@@ -1,6 +1,6 @@
 package org.karpukhin.currencywatcher.rateproviders;
 
-import org.karpukhin.currencywatcher.Rate;
+import org.karpukhin.currencywatcher.model.Rate;
 
 import java.io.IOException;
 import java.io.InputStream;

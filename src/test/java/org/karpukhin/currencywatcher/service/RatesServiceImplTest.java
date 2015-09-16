@@ -1,8 +1,8 @@
 package org.karpukhin.currencywatcher.service;
 
 import org.junit.Test;
-import org.karpukhin.currencywatcher.OperationCategories;
-import org.karpukhin.currencywatcher.Rate;
+import org.karpukhin.currencywatcher.model.OperationCategories;
+import org.karpukhin.currencywatcher.model.Rate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

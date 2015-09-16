@@ -1,4 +1,4 @@
-package org.karpukhin.currencywatcher;
+package org.karpukhin.currencywatcher.model;
 
 /**
  * @author Pavel Karpukhin

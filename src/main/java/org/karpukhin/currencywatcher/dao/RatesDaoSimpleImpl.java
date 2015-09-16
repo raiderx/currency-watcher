@@ -1,8 +1,8 @@
 package org.karpukhin.currencywatcher.dao;
 
 import org.joda.time.DateTime;
-import org.karpukhin.currencywatcher.OperationCategories;
-import org.karpukhin.currencywatcher.Rate;
+import org.karpukhin.currencywatcher.model.OperationCategories;
+import org.karpukhin.currencywatcher.model.Rate;
 
 import java.util.ArrayList;
 import java.util.List;

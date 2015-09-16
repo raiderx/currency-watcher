@@ -2,10 +2,9 @@ package org.karpukhin.currencywatcher.web;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import org.karpukhin.currencywatcher.OperationCategories;
-import org.karpukhin.currencywatcher.Rate;
-import org.karpukhin.currencywatcher.RateWto;
-import org.karpukhin.currencywatcher.RatesUpdatedEvent;
+import org.karpukhin.currencywatcher.model.OperationCategories;
+import org.karpukhin.currencywatcher.model.Rate;
+import org.karpukhin.currencywatcher.model.RatesUpdatedEvent;
 import org.karpukhin.currencywatcher.service.RatesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.joda.time.DateTime;
-import org.karpukhin.currencywatcher.OperationCategories;
-import org.karpukhin.currencywatcher.Rate;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
+import org.karpukhin.currencywatcher.model.OperationCategories;
+import org.karpukhin.currencywatcher.model.Rate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

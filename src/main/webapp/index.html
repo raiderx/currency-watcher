@@ -7,6 +7,9 @@
         table.rates {
             width: 100%;
         }
+        table.rates th {
+            text-align: left;
+        }
         .red {
             color: red;
         }
@@ -19,42 +22,44 @@
     <h1>Currency Exchange Rates</h1>
 
     <div>
-        Category:
+        <label>Category:
         <select name="category">
             <option value="">All</option>
             <option value="DEPOSIT_PAYMENTS">Deposit Payments</option>
             <option value="DEBIT_CARDS_TRANSFERS" selected="selected">Debit Cards Transfers</option>
             <option value="DEBIT_CARDS_OPERATIONS">Debit Cards Operations</option>
-        </select>
+        </select></label>
+
+        Currency:
+        <label><input type="checkbox" value="USD/RUB" class="currencyPair"/>USD/RUB</label>
+        <label><input type="checkbox" value="EUR/RUB" class="currencyPair"/>EUR/RUB</label>
+        <label><input type="checkbox" value="EUR/USD" class="currencyPair"/>EUR/USD</label>
+        <label><input type="checkbox" value="GBP/RUB" class="currencyPair"/>GBP/RUB</label>
     </div>
 
     <div id="root"></div>
 
     <script type="text/template" id="tpl-rates">
         <tr>
-            <th>Bank</th>
             <th>Time</th>
             <th>Category</th>
-            <th>From currency</th>
-            <th>To currency</th>
+            <th>Currency Pair</th>
             <th>Buy</th>
             <th>Sell</th>
+            <th>Average</th>
             <th>Spread</th>
-            <th>Created</th>
         </tr>
     </script>
 
     <script type="text/template" id="tpl-rate">
         <tr>
-            <td> <%- bankName %> </td>
             <td> <%- bankTime %> </td>
             <td> <%- category %> </td>
-            <td> <%- fromCurrency %> </td>
-            <td> <%- toCurrency %> </td>
+            <td> <%- currencyPair %> </td>
             <td> <span class="<%- buyDiff == 'greater' ? 'green' : (buyDiff == 'less' ? 'red' : '') %>"> <%- buy %> </span> </td>
             <td> <span class="<%- sellDiff == 'greater' ? 'green' : (sellDiff == 'less' ? 'red' : '') %>"> <%- sell %> </span> </td>
-            <td> <%- spread %> </td>
-            <td> <%- created %> </td>
+            <td> <%- average %> </td>
+            <td> <%- spread %> (<%- (100 * spread / average).toFixed() %>%) </td>
         </tr>
     </script>
 
