@@ -6,6 +6,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.karpukhin.currencywatcher.exceptions.ApplicationException;
 import org.karpukhin.currencywatcher.model.Quote;
+import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static org.karpukhin.currencywatcher.utils.AssertUtils.assertNotNull;
+import static org.karpukhin.currencywatcher.utils.AssertUtils.assertTrue;
 
 /**
  * @author Pavel Karpukhin
@@ -39,6 +41,7 @@ public class YahooQuotesProvider implements QuotesProvider {
     static final String columns = "snl1d1t1ab";
 
     static final String UTF8 = "UTF-8";
+    static final String GZIP = "gzip";
 
     static final int CONNECT_TIMEOUT = 20000;
     static final String ACCEPT = "Accept";
@@ -51,6 +54,8 @@ public class YahooQuotesProvider implements QuotesProvider {
     static final String USER_AGENT_VALUE = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36";
 
     static final String CONTENT_ENCODING = "Content-Encoding";
+
+    static final String DATETIME_FORMAT = "M/d/yyyy h:mma";
 
     static final Map<String, String> map = new HashMap<>();
 
@@ -83,8 +88,7 @@ public class YahooQuotesProvider implements QuotesProvider {
         return parseQuotes(getQuotesAsStrings(input));
     }
 
-    @Override
-    public Quote parseQuote(String str) {
+    static Quote parseQuote(String str) {
         String[] columns = str.replaceAll("\"", "").split(",");
         return new Quote(
                 columns[0], columns[1],
@@ -94,7 +98,7 @@ public class YahooQuotesProvider implements QuotesProvider {
                 new BigDecimal(columns[6]).stripTrailingZeros());
     }
 
-    public Collection<Quote> parseQuotes(List<String> strings) {
+    static Collection<Quote> parseQuotes(List<String> strings) {
         assertNotNull(strings, "Parameter 'strings' is required");
 
         List<Quote> result = new ArrayList<>();
@@ -104,23 +108,15 @@ public class YahooQuotesProvider implements QuotesProvider {
         return result;
     }
 
-    static InputStream getInputStream(HttpURLConnection connection) throws IOException {
-        assertNotNull(connection, "Parameter 'connection' is required");
-
-        String contentEncoding = connection.getHeaderField(CONTENT_ENCODING);
-        if (contentEncoding == null) {
-            return connection.getInputStream();
-        }
-        if ("gzip".equals(contentEncoding)) {
-            return new GZIPInputStream(connection.getInputStream());
-        }
-        throw new ApplicationException("Unexpected content encoding: " + contentEncoding);
-    }
-
     static List<String> getQuotesAsStrings(String currencyPairs) {
+        String symbols = getSymbols(currencyPairs);
+        if (!StringUtils.hasText(symbols)) {
+            return new ArrayList<>();
+        }
+
         String path;
         try {
-            path = BASE_URL + "?s="  + URLEncoder.encode(getSymbols(currencyPairs), UTF8) + "&f=" + URLEncoder.encode(columns, UTF8);
+            path = BASE_URL + "?s="  + URLEncoder.encode(symbols, UTF8) + "&f=" + URLEncoder.encode(columns, UTF8);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Unsupported encoding:" + UTF8);
         }
@@ -156,6 +152,8 @@ public class YahooQuotesProvider implements QuotesProvider {
     }
 
     static List<String> getQuotesAsStrings(InputStream input) {
+        assertNotNull(input, "Parameter 'input' is required");
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, UTF8))) {
             String line = reader.readLine();
             List<String> result = new ArrayList<>();
@@ -169,7 +167,29 @@ public class YahooQuotesProvider implements QuotesProvider {
         }
     }
 
+    static InputStream getInputStream(HttpURLConnection connection) throws IOException {
+        assertNotNull(connection, "Parameter 'connection' is required");
+
+        String contentEncoding = connection.getHeaderField(CONTENT_ENCODING);
+        if (contentEncoding == null) {
+            return connection.getInputStream();
+        }
+        if (GZIP.equals(contentEncoding)) {
+            return new GZIPInputStream(connection.getInputStream());
+        }
+        throw new ApplicationException("Unexpected content encoding: " + contentEncoding);
+    }
+
+    /**
+     * Returns Yahoo symbols for given currency pairs
+     *
+     * @param currencyPairs comma separated list of currency pairs
+     * @return Yahoo symbols for given currency pairs
+     */
     static String getSymbols(String currencyPairs) {
+        assertNotNull(currencyPairs, "Parameter 'currencyPairs' is required");
+        assertTrue(StringUtils.hasText(currencyPairs), "Parameter 'currencyPairs' is empty");
+
         String[] pairs = currencyPairs.split(",");
         StringBuilder result = new StringBuilder();
         for(String pair : pairs) {
@@ -183,7 +203,7 @@ public class YahooQuotesProvider implements QuotesProvider {
     }
 
     static DateTime parseDateTime(String date, String time) {
-        DateTimeFormatter format = DateTimeFormat.forPattern("M/d/yyyy h:mma")
+        DateTimeFormatter format = DateTimeFormat.forPattern(DATETIME_FORMAT)
                 .withLocale(Locale.US)
                 .withZone(DateTimeZone.UTC);
         return format.parseDateTime(date + " " + time);

@@ -19,8 +19,4 @@ public interface QuotesProvider {
     Quote parseQuote(InputStream input);
 
     Collection<Quote> parseQuotes(InputStream input);
-
-    Quote parseQuote(String str);
-
-    Collection<Quote> parseQuotes(List<String> strings);
 }
