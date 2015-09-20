@@ -4,9 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.karpukhin.currencywatcher.model.Quote;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.util.Collection;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
