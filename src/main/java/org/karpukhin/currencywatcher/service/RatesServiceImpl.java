@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class RatesServiceImpl implements RatesService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void updateRates(List<Rate> rates) {
+    public void updateRates(Collection<Rate> rates) {
         List<Rate> changed = new ArrayList<>();
         for (Rate newRate : rates) {
             Rate oldRate = ratesDao.getLastRate(newRate.getBankName(), newRate.getCategory(),

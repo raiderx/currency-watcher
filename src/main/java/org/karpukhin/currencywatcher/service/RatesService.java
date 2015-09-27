@@ -3,6 +3,7 @@ package org.karpukhin.currencywatcher.service;
 import org.karpukhin.currencywatcher.model.OperationCategories;
 import org.karpukhin.currencywatcher.model.Rate;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public interface RatesService {
 
-    void updateRates(List<Rate> rates);
+    void updateRates(Collection<Rate> rates);
 
     List<Rate> getRates();
 

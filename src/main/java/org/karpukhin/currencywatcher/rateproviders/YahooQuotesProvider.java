@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,12 +39,12 @@ public class YahooQuotesProvider implements QuotesProvider {
 
     static final String BASE_URL = "http://download.finance.yahoo.com/d/quotes.csv";
     // s - symbol, n - name, l1 - last trade (price only), d1 - last trade date, t1 - last trade time, a - ask, b - bid
-    static final String columns = "snl1d1t1ab";
+    static final String COLUMNS = "snl1d1t1ab";
 
     static final String UTF8 = "UTF-8";
-    static final String GZIP = "gzip";
 
     static final int CONNECT_TIMEOUT = 20000;
+
     static final String ACCEPT = "Accept";
     static final String ACCEPT_VALUE = "application/json, text/javascript, */*; q=0.01";
     static final String ACCEPT_ENCODING = "Accept-Encoding";
@@ -54,6 +55,7 @@ public class YahooQuotesProvider implements QuotesProvider {
     static final String USER_AGENT_VALUE = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36";
 
     static final String CONTENT_ENCODING = "Content-Encoding";
+    static final String GZIP = "gzip";
 
     static final String DATETIME_FORMAT = "M/d/yyyy h:mma";
 
@@ -116,7 +118,7 @@ public class YahooQuotesProvider implements QuotesProvider {
 
         String path;
         try {
-            path = BASE_URL + "?s="  + URLEncoder.encode(symbols, UTF8) + "&f=" + URLEncoder.encode(columns, UTF8);
+            path = BASE_URL + "?s="  + URLEncoder.encode(symbols, UTF8) + "&f=" + URLEncoder.encode(COLUMNS, UTF8);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Unsupported encoding:" + UTF8);
         }
@@ -167,7 +169,7 @@ public class YahooQuotesProvider implements QuotesProvider {
         }
     }
 
-    static InputStream getInputStream(HttpURLConnection connection) throws IOException {
+    static InputStream getInputStream(URLConnection connection) throws IOException {
         assertNotNull(connection, "Parameter 'connection' is required");
 
         String contentEncoding = connection.getHeaderField(CONTENT_ENCODING);
