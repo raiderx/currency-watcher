@@ -1,6 +1,8 @@
 package org.karpukhin.currencywatcher.task;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.karpukhin.currencywatcher.model.Rate;
 import org.karpukhin.currencywatcher.rateproviders.RatesProvider;
 import org.karpukhin.currencywatcher.rateproviders.TcsRatesProviderImpl;
@@ -33,6 +35,9 @@ public class UpdateTask {
     private static final Logger logger = LoggerFactory.getLogger(UpdateTask.class);
 
     private static final Random random = new Random();
+
+    private static final String DATE_WITH_TIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
+    private static final String TIME_FORMAT = "HH:mm:ss";
 
     private static final long ONE_MINUTE = 60;
     private static final long FIVE_MINUTES = 5 * 60;
@@ -95,24 +100,25 @@ public class UpdateTask {
     }
 
     static Date getNextExecutionTime() {
-        DateTime dateTime = DateTime.now();
-        if (dateTime.getHourOfDay() >= 9 && dateTime.getHourOfDay() < 20) {
+        DateTime now = DateTime.now();
+        if (now.getHourOfDay() >= 9 && now.getHourOfDay() < 20) {
             long delay = getDelay();
             Date date = new Date(System.currentTimeMillis() + delay * 1000L);
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            logger.debug(String.format("Update will be executed after %d:%02d at %s",
-                    delay / ONE_MINUTE, delay % ONE_MINUTE, sdf.format(date)));
+            if (logger.isDebugEnabled()) {
+                SimpleDateFormat sdf = new SimpleDateFormat(TIME_FORMAT);
+                logger.debug(String.format("Update will be executed after %d:%02d at %s",
+                        delay / ONE_MINUTE, delay % ONE_MINUTE, sdf.format(date)));
+            }
             return date;
         }
-        Date date = getNextDay(9, 0).toDate();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        logger.debug("Update will be executed at {}", sdf.format(date));
-        return date;
-    }
-    
-    static DateTime getNextDay(int hourOfDay, int minuteOfHour) {
-        return DateTime.now()
-                .withTime(hourOfDay, minuteOfHour, 0, 0)
-                .plusDays(1);
+        DateTime next = now.withTime(9, 0, 0, 0);
+        if (now.getHourOfDay() >= 20) {
+            next = now.plusDays(1);
+        }
+        if (logger.isDebugEnabled()) {
+            DateTimeFormatter format = DateTimeFormat.forPattern(DATE_WITH_TIME_FORMAT);
+            logger.debug("Update will be executed at {}", format.print(next));
+        }
+        return next.toDate();
     }
 }
