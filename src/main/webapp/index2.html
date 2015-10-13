@@ -4,6 +4,7 @@
     <title> Home </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="css/xcharts.min.css"/>
+    <link rel="stylesheet" href="css/jquery-ui.min.css"/>
     <style>
         table.rates {
             width: 100%;
@@ -80,7 +81,9 @@
         <label><input type="radio" name="period_<%- id %>" value="day" checked="checked"/>Day</label>
         <label><input type="radio" name="period_<%- id %>" value="week"/>Week</label>
         <label><input type="radio" name="period_<%- id %>" value="month"/>Month</label>
-        <!--<label><input type="radio" name="period_<%- id %>" value="custom"/>Custom</label>-->
+        <label><input type="radio" name="period_<%- id %>" value="custom"/>Custom</label>
+        <label>from: <input type="text" name="from_<%- id %>" disabled="disabled"/></label>
+        <label>to: <input type="text" name="to_<%- id %>" disabled="disabled"/></label>
 
         <figure style="height: 300px;"></figure>
     </div>
@@ -88,6 +91,7 @@
 
 <script type="application/javascript" src="js/vendor/d3.min.js"></script>
 <script type="application/javascript" src="js/vendor/jquery-min.js"></script>
+<script type="application/javascript" src="js/vendor/jquery-ui.min.js"></script>
 <script type="application/javascript" src="js/vendor/stomp.min.js"></script>
 <script type="application/javascript" src="js/vendor/underscore-min.js"></script>
 <script type="application/javascript" src="js/vendor/xcharts.min.js"></script>
@@ -157,15 +161,26 @@
 
         $('#root').append( chartTpl( { id: suffix } ) );
 
+        var $chart = $('#chart_' + suffix);
+
         var chart = new xChart('line-dotted', data, '#chart_' + suffix + ' figure', opts);
 
-        var $inputs = $('#chart_' + suffix + ' input[name=period_' + suffix + ']');
+        var $inputs = $('input[name=period_' + suffix + ']', $chart);
         $inputs.on('change', function(event) {
             var $input = $(event.target);
             if ($input.is(':checked')) {
-                updateChart(chart, currencyPair, $input.val());
+                if ($input.val() === 'custom') {
+                    $('input[name=from_' + suffix + ']', $chart).prop('disabled', false);
+                    $('input[name=to_' + suffix + ']', $chart).prop('disabled', false);
+                } else {
+                    $('input[name=from_' + suffix + ']', $chart).prop('disabled', true);
+                    $('input[name=to_' + suffix + ']', $chart).prop('disabled', true);
+                    updateChart(chart, currencyPair, $input.val());
+                }
             }
         });
+        $('input[name=from_' + suffix + ']', $chart).datepicker(/*{defaultDate: new Date()}*/);
+        $('input[name=to_' + suffix + ']', $chart).datepicker({ defaultDate: '01/10/2015' });
 
         var period = $inputs.filter(':checked').val();
 
@@ -210,6 +225,12 @@
     }
 
     $(function() {
+
+        $.datepicker.setDefaults({
+            dateFormat: 'dd/mm/yy',
+            defaultDate: $.datepicker.formatDate( "dd/mm/yy", new Date() ),
+            firstDay: 1
+        });
 
         initPageModel();
 
