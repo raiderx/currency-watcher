@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class TcsRatesProviderImpl implements RatesProvider {
     private static final String BUY_EXPR = "/buy";
     private static final String SELL_EXPR = "/sell";
 
-    private static final ObjectReader reader = new ObjectMapper().reader();
+    private static final ObjectReader reader = new ObjectMapper()/*.disable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)*/.reader();
 
     @Override
     public Collection<Rate> getRates() {
@@ -114,6 +115,9 @@ public class TcsRatesProviderImpl implements RatesProvider {
             rootNode = reader.readTree(stream);
         } catch (JsonProcessingException e) {
             throw new ApplicationException("Can not read JSON from stream", e);
+        }
+        if (rootNode == null) {
+            return Collections.emptyList();
         }
         return parseRootJsonNode(rootNode);
     }

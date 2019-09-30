@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -46,10 +47,11 @@ public class TcsRatesProviderImplTest {
         provider.parseStream(null);
     }
 
-    @Test(expected = ApplicationException.class)
+    @Test
     public void testParseStreamWithEmptyStream() throws IOException {
         try (InputStream stream = new ByteArrayInputStream("".getBytes(UTF_8))) {
-            provider.parseStream(stream);
+            List<Rate> result = provider.parseStream(stream);
+            assertThat(result, is(empty()));
         }
     }
 
